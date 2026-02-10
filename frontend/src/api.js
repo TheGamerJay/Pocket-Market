@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_BASE || "http://127.0.0.1:5000";
+const API = import.meta.env.VITE_API_BASE !== undefined ? import.meta.env.VITE_API_BASE : "http://127.0.0.1:5000";
 
 async function req(path, { method="GET", body, headers={}, isForm=false } = {}) {
   const opts = {
