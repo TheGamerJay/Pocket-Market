@@ -57,7 +57,7 @@ export default function Signup({ notify }){
               background:"none", border:"none", color:"var(--cyan)",
               cursor:"pointer", fontSize:13, fontWeight:700,
             }}>
-              {showPw ? "Hide" : "Show"} &gt;
+              {showPw ? "🙈" : "👁️"}
             </button>
           }
         />

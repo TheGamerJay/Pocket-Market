@@ -54,11 +54,18 @@ export default function Login({ notify, refreshMe }){
           value={password}
           onChange={e => setPassword(e.target.value)}
           rightAction={
-            <Link to="/forgot" style={{ color:"var(--cyan)", fontSize:13, fontWeight:700, textDecoration:"none" }}>
-              Forgot &gt;
-            </Link>
+            <button type="button" onClick={() => setShowPw(p => !p)} style={{
+              background:"none", border:"none", color:"var(--cyan)",
+              cursor:"pointer", fontSize:13, fontWeight:700,
+            }}>
+              {showPw ? "🙈" : "👁️"}
+            </button>
           }
         />
+
+        <Link to="/forgot" style={{ color:"var(--cyan)", fontSize:13, fontWeight:700, textDecoration:"none", textAlign:"right" }}>
+          Forgot Password?
+        </Link>
 
         <Button disabled={busy}>{busy ? "Signing in..." : "Log In"}</Button>
       </form>
