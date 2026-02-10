@@ -14,9 +14,11 @@ class User(UserMixin, db.Model):
 
     id = db.Column(db.String(36), primary_key=True, default=_uuid)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.Text, nullable=False)
+    password_hash = db.Column(db.Text, nullable=True)  # nullable for OAuth-only users
 
     display_name = db.Column(db.String(120))
+    google_sub = db.Column(db.String(255), unique=True, nullable=True, index=True)
+    avatar_url = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     rating_avg = db.Column(db.Numeric, default=0)
@@ -45,6 +47,9 @@ class Listing(db.Model):
 
     city = db.Column(db.String(64))
     zip = db.Column(db.String(16))
+
+    lat = db.Column(db.Float, nullable=True)
+    lng = db.Column(db.Float, nullable=True)
 
     pickup_or_shipping = db.Column(db.String(16), nullable=False)  # "pickup"|"shipping"
     is_sold = db.Column(db.Boolean, default=False)

@@ -4,8 +4,9 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from flask_login import login_required, current_user
 
+from sqlalchemy import func
 from extensions import db
-from models import Listing, ListingImage, SafeMeetLocation, Boost
+from models import Listing, ListingImage, SafeMeetLocation, Boost, Observing
 
 listings_bp = Blueprint("listings", __name__)
 
@@ -17,6 +18,7 @@ def _listing_to_dict(l: Listing):
         Boost.status == "active",
         Boost.ends_at > datetime.utcnow()
     ).first()
+    observing_count = db.session.query(func.count(Observing.id)).filter_by(listing_id=l.id).scalar()
 
     return {
         "id": l.id,
@@ -28,6 +30,8 @@ def _listing_to_dict(l: Listing):
         "condition": l.condition,
         "city": l.city,
         "zip": l.zip,
+        "lat": l.lat,
+        "lng": l.lng,
         "pickup_or_shipping": l.pickup_or_shipping,
         "is_sold": l.is_sold,
         "created_at": l.created_at.isoformat(),
@@ -39,7 +43,8 @@ def _listing_to_dict(l: Listing):
             "lng": float(meet.lng),
             "place_type": meet.place_type
         },
-        "is_boosted": bool(active_boost)
+        "is_boosted": bool(active_boost),
+        "observing_count": observing_count
     }
 
 @listings_bp.get("/uploads/<path:filename>")
@@ -76,6 +81,8 @@ def create_listing():
         condition=(data.get("condition") or "used").strip(),
         city=(data.get("city") or "").strip() or None,
         zip=(data.get("zip") or "").strip() or None,
+        lat=data.get("lat"),
+        lng=data.get("lng"),
         pickup_or_shipping=(data.get("pickup_or_shipping") or "pickup").strip(),
     )
 

@@ -20,7 +20,8 @@ def me():
             "id": current_user.id,
             "email": current_user.email,
             "display_name": current_user.display_name,
-            "is_pro": current_user.is_pro
+            "is_pro": current_user.is_pro,
+            "avatar_url": current_user.avatar_url
         }
     }), 200
 
@@ -52,7 +53,7 @@ def login():
     password = data.get("password") or ""
 
     u = User.query.filter_by(email=email).first()
-    if not u or not u.check_password(password):
+    if not u or not u.password_hash or not u.check_password(password):
         return jsonify({"error": "Invalid credentials"}), 401
 
     login_user(u)

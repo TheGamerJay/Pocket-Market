@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import TopBar from "../components/TopBar.jsx";
-import Card from "../components/Card.jsx";
+import AuthHeader from "../components/AuthHeader.jsx";
 import Input from "../components/Input.jsx";
 import Button from "../components/Button.jsx";
+import { IconEnvelope, IconLock, IconGoogle, IconFacebook } from "../components/Icons.jsx";
 import { api } from "../api.js";
 
 export default function Login({ notify, refreshMe }){
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const nav = useNavigate();
   const loc = useLocation();
@@ -31,19 +32,41 @@ export default function Login({ notify, refreshMe }){
 
   return (
     <>
-      <TopBar title="Login" />
-      <div style={{height:12}}/>
-      <Card>
-        <form onSubmit={onSubmit} className="col">
-          <Input label="Email" value={email} onChange={e=>setEmail(e.target.value)} />
-          <Input label="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
-          <Button disabled={busy}>{busy ? "Signing in..." : "Sign in"}</Button>
-          <div className="row" style={{justifyContent:"space-between"}}>
-            <Link className="muted" to="/forgot">Forgot password?</Link>
-            <Link className="muted" to="/signup">Create account</Link>
-          </div>
-        </form>
-      </Card>
+      <AuthHeader title="Log In" />
+
+      <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:6 }}>
+        <button className="btn-social" type="button" onClick={() => { window.location.href = `${api.base}/api/auth/google/start`; }}>
+          <IconGoogle size={20} /> Log in with Google
+        </button>
+        <button className="btn-social" type="button" onClick={() => notify("Facebook login coming soon")}>
+          <IconFacebook size={20} /> Log in with Facebook
+        </button>
+      </div>
+
+      <div className="divider-text" style={{ margin:"14px 0" }}>or log in with <strong>email</strong></div>
+
+      <form onSubmit={onSubmit} style={{ display:"flex", flexDirection:"column", gap:12 }}>
+        <Input icon={<IconEnvelope size={18} />} placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+        <Input
+          icon={<IconLock size={18} />}
+          placeholder="Password"
+          type={showPw ? "text" : "password"}
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          rightAction={
+            <Link to="/forgot" style={{ color:"var(--cyan)", fontSize:13, fontWeight:700, textDecoration:"none" }}>
+              Forgot &gt;
+            </Link>
+          }
+        />
+
+        <Button disabled={busy}>{busy ? "Signing in..." : "Log In"}</Button>
+      </form>
+
+      <div className="muted" style={{ textAlign:"center", fontSize:13, marginTop:18 }}>
+        Don't have an account?{" "}
+        <Link to="/signup" style={{ color:"var(--cyan)", fontWeight:700 }}>Sign Up</Link>
+      </div>
     </>
   );
 }

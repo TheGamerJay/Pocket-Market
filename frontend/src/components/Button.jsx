@@ -1,4 +1,4 @@
-export default function Button({ children, variant="primary", ...props }){
+export default function Button({ children, variant="primary", icon, ...props }){
   const base = {
     borderRadius: 14,
     border: "1px solid var(--border)",
@@ -8,6 +8,11 @@ export default function Button({ children, variant="primary", ...props }){
     background: "var(--panel2)",
     color: "var(--text)",
     width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    fontSize: 14,
   };
 
   const variants = {
@@ -19,8 +24,10 @@ export default function Button({ children, variant="primary", ...props }){
     danger: { background: "rgba(255,77,77,.12)", border: "1px solid rgba(255,77,77,.35)" }
   };
 
+  const { style: propStyle, ...rest } = props;
   return (
-    <button style={{...base, ...(variants[variant]||{})}} {...props}>
+    <button style={{...base, ...(variants[variant]||{}), ...(propStyle||{})}} {...rest}>
+      {icon && <span style={{ display:"flex", alignItems:"center" }}>{icon}</span>}
       {children}
     </button>
   );

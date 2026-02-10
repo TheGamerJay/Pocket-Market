@@ -16,6 +16,7 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Forgot from "./pages/Forgot.jsx";
 import Reset from "./pages/Reset.jsx";
+import SafeMeetup from "./pages/SafeMeetup.jsx";
 
 function RequireAuth({ authed, children }){
   const loc = useLocation();
@@ -60,6 +61,11 @@ export default function App(){
             </RequireAuth>
           }/>
           <Route path="/listing/:id" element={<Listing me={me} notify={notify} />} />
+          <Route path="/listing/:id/meetup" element={
+            <RequireAuth authed={me.authed}>
+              <SafeMeetup notify={notify} />
+            </RequireAuth>
+          }/>
           <Route path="/messages" element={
             <RequireAuth authed={me.authed}>
               <Messages me={me} notify={notify} />

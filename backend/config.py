@@ -14,3 +14,8 @@ class Config:
 
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "uploads")
     MAX_CONTENT_LENGTH_MB = int(os.getenv("MAX_CONTENT_LENGTH_MB", "10"))
+
+    # Session cookie settings for HTTPS (Railway)
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = os.getenv("RAILWAY_ENVIRONMENT", "") != ""

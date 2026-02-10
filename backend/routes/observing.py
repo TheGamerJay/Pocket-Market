@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required, current_user
+from sqlalchemy import func
 from extensions import db
 from models import Observing, Listing
 
@@ -12,14 +13,16 @@ def toggle(listing_id):
     if existing:
         db.session.delete(existing)
         db.session.commit()
-        return jsonify({"ok": True, "observing": False}), 200
+        count = db.session.query(func.count(Observing.id)).filter_by(listing_id=listing_id).scalar()
+        return jsonify({"ok": True, "observing": False, "observing_count": count}), 200
 
     if not db.session.get(Listing, listing_id):
         return jsonify({"error": "Listing not found"}), 404
 
     db.session.add(Observing(user_id=current_user.id, listing_id=listing_id))
     db.session.commit()
-    return jsonify({"ok": True, "observing": True}), 200
+    count = db.session.query(func.count(Observing.id)).filter_by(listing_id=listing_id).scalar()
+    return jsonify({"ok": True, "observing": True, "observing_count": count}), 200
 
 @observing_bp.get("")
 @login_required
