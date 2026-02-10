@@ -15,7 +15,7 @@ class Config:
 
     FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
-    RESET_TOKEN_SALT = os.getenv("RESET_TOKEN_SALT", "minimarket-reset")
+    RESET_TOKEN_SALT = os.getenv("RESET_TOKEN_SALT", "pocketmarket-reset")
     RESET_TOKEN_EXPIRES_SECONDS = int(os.getenv("RESET_TOKEN_EXPIRES_SECONDS", "3600"))
 
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "uploads")

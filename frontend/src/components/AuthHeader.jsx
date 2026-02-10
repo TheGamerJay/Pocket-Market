@@ -16,7 +16,7 @@ export default function AuthHeader({ title }){
       <div className="auth-header">
         <div className="auth-logo">
           <IconBag size={32} color="var(--cyan)" />
-          <span className="gradient-text" style={{ fontSize:22, fontWeight:800 }}>Mini Market</span>
+          <span className="gradient-text" style={{ fontSize:22, fontWeight:800 }}>Pocket Market</span>
         </div>
         <h1 style={{ fontSize:24, fontWeight:800, marginTop:16, marginBottom:0 }}>{title}</h1>
       </div>

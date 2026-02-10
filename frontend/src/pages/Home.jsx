@@ -43,7 +43,7 @@ export default function Home({ me, notify }){
     <>
       {/* ── Header ── */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 0 6px" }}>
-        <span className="gradient-text" style={{ fontSize:24, fontWeight:800 }}>Mini Market</span>
+        <span className="gradient-text" style={{ fontSize:24, fontWeight:800 }}>Pocket Market</span>
         <Link to="/profile" style={{
           display:"flex", alignItems:"center", justifyContent:"center",
           width:38, height:38, borderRadius:"50%",
