@@ -17,11 +17,12 @@ export default function Button({ children, variant="primary", icon, ...props }){
 
   const variants = {
     primary: {
-      background: "linear-gradient(90deg, rgba(52,216,255,.22), rgba(139,92,255,.18))",
-      border: "1px solid rgba(52,216,255,.35)"
+      background: "linear-gradient(135deg, rgba(62,224,255,.25), rgba(164,122,255,.22))",
+      border: "1px solid rgba(62,224,255,.40)",
+      color: "#fff",
     },
-    ghost: { background: "transparent" },
-    danger: { background: "rgba(255,77,77,.12)", border: "1px solid rgba(255,77,77,.35)" }
+    ghost: { background: "transparent", border: "1px solid var(--border)" },
+    danger: { background: "rgba(255,92,92,.14)", border: "1px solid rgba(255,92,92,.40)" }
   };
 
   const { style: propStyle, ...rest } = props;

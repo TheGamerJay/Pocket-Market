@@ -14,7 +14,7 @@ export default function BottomNav(){
     <div style={{
       position: "fixed", left: 0, right: 0, bottom: 0,
       padding: "8px 10px 12px",
-      background: "rgba(8,12,18,.85)",
+      background: "rgba(14,18,26,.88)",
       borderTop: "1px solid var(--border)",
       backdropFilter: "blur(10px)",
       zIndex: 10,
@@ -35,7 +35,7 @@ export default function BottomNav(){
                 width: 50, height: 50, borderRadius: "50%",
                 background: "linear-gradient(135deg, var(--cyan), var(--violet))",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 4px 16px rgba(52,216,255,.35)",
+                boxShadow: "0 4px 18px rgba(62,224,255,.40)",
               }}>
                 <Icon size={24} color="#fff" />
               </div>
