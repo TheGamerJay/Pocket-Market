@@ -20,7 +20,7 @@ export default function Post({ notify }){
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) { notify("Title is required"); return; }
-    const price_cents = Math.round(parseFloat(price || "0") * 100);
+    const price_cents = Math.round(parseFloat((price || "0").replace(/[^0-9.]/g, "")) * 100);
     if (!price_cents || price_cents <= 0) { notify("Enter a valid price"); return; }
     setBusy(true);
     try{
