@@ -7,6 +7,7 @@ from .boosts import boosts_bp
 from .billing import billing_bp
 from .ads import ads_bp
 from .oauth import oauth_bp, init_oauth
+from .notifications import notifications_bp
 
 def register_blueprints(app):
     init_oauth(app)
@@ -19,3 +20,4 @@ def register_blueprints(app):
     app.register_blueprint(billing_bp, url_prefix="/api/billing")
     app.register_blueprint(ads_bp, url_prefix="/api/ads")
     app.register_blueprint(oauth_bp, url_prefix="/api/auth")
+    app.register_blueprint(notifications_bp, url_prefix="/api/notifications")

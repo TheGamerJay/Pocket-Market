@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Card from "../components/Card.jsx";
-import { IconSearch, IconChevronRight, IconCamera, IconEye } from "../components/Icons.jsx";
-import DistanceLabel from "../components/DistanceLabel.jsx";
+import { IconSearch, IconChevronRight, IconCamera, IconEye, IconBell } from "../components/Icons.jsx";
 import { api } from "../api.js";
 
 const CATEGORIES = [
@@ -25,7 +24,7 @@ function timeAgo(iso){
   return `${Math.floor(diff/604800)}w ago`;
 }
 
-export default function Home({ me, notify }){
+export default function Home({ me, notify, unreadNotifs = 0 }){
   const [listings, setListings] = useState([]);
   const [featuredIds, setFeaturedIds] = useState([]);
   const [ads, setAds] = useState([]);
@@ -65,17 +64,34 @@ export default function Home({ me, notify }){
         <img src="/pocketmarket_favicon_transparent_512x512.png" alt="Pocket Market" style={{ width:320, height:320 }} />
       </div>
 
-      {/* ── Search bar ── */}
-      <div
-        onClick={() => nav("/search")}
-        style={{
-          display:"flex", alignItems:"center", gap:10,
-          padding:"12px 14px", borderRadius:14, marginTop:8,
-          background:"var(--panel)", border:"1px solid var(--border)", cursor:"pointer",
-        }}
-      >
-        <IconSearch size={18} color="var(--muted)" />
-        <span className="muted" style={{ fontSize:14 }}>Search for items...</span>
+      {/* ── Search bar + bell ── */}
+      <div style={{ display:"flex", gap:10, alignItems:"center", marginTop:8 }}>
+        <div
+          onClick={() => nav("/search")}
+          style={{
+            flex:1, display:"flex", alignItems:"center", gap:10,
+            padding:"12px 14px", borderRadius:14,
+            background:"var(--panel)", border:"1px solid var(--border)", cursor:"pointer",
+          }}
+        >
+          <IconSearch size={18} color="var(--muted)" />
+          <span className="muted" style={{ fontSize:14 }}>Search for items...</span>
+        </div>
+        <Link to="/notifications" style={{ position:"relative", display:"flex" }}>
+          <IconBell size={24} color="var(--muted)" />
+          {unreadNotifs > 0 && (
+            <div style={{
+              position:"absolute", top:-4, right:-4,
+              minWidth:16, height:16, borderRadius:8,
+              background:"var(--danger)", color:"#fff",
+              fontSize:9, fontWeight:800,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              padding:"0 4px",
+            }}>
+              {unreadNotifs > 9 ? "9+" : unreadNotifs}
+            </div>
+          )}
+        </Link>
       </div>
 
       {/* ── Category chips ── */}

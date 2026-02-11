@@ -66,5 +66,9 @@ export const api = {
   billingStatus: () => req("/api/billing/status"),
   setPro: (is_pro) => req("/api/billing/set-pro", { method:"POST", body: { is_pro } }),
 
-  ads: () => req("/api/ads")
+  ads: () => req("/api/ads"),
+
+  notifications: () => req("/api/notifications"),
+  unreadNotifCount: () => req("/api/notifications/unread-count"),
+  markNotifsRead: () => req("/api/notifications/mark-read", { method:"POST" }),
 };

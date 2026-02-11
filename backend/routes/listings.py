@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 
 from sqlalchemy import func
 from extensions import db
-from models import Listing, ListingImage, SafeMeetLocation, Boost, Observing
+from models import Listing, ListingImage, SafeMeetLocation, Boost, Observing, Notification
 
 listings_bp = Blueprint("listings", __name__)
 
@@ -135,6 +135,9 @@ def update_listing(listing_id):
         return jsonify({"error": "Forbidden"}), 403
 
     data = request.get_json(force=True)
+    old_price = l.price_cents
+    old_sold = l.is_sold
+
     for field in ["title","description","category","condition","city","zip","pickup_or_shipping"]:
         if field in data:
             setattr(l, field, (data.get(field) or "").strip() or None)
@@ -148,6 +151,31 @@ def update_listing(listing_id):
         l.is_sold = bool(data.get("is_sold"))
 
     db.session.commit()
+
+    # Notify observers about meaningful changes
+    messages = []
+    if "price_cents" in data and l.price_cents != old_price:
+        old_d = old_price / 100
+        new_d = l.price_cents / 100
+        if l.price_cents < old_price:
+            messages.append(f'Price dropped on "{l.title}": ${old_d:.0f} → ${new_d:.0f}')
+        else:
+            messages.append(f'Price changed on "{l.title}": ${old_d:.0f} → ${new_d:.0f}')
+    if "is_sold" in data and l.is_sold != old_sold:
+        if l.is_sold:
+            messages.append(f'"{l.title}" has been marked as sold')
+        else:
+            messages.append(f'"{l.title}" is available again!')
+
+    if messages:
+        observers = Observing.query.filter_by(listing_id=l.id).all()
+        for obs in observers:
+            if obs.user_id == current_user.id:
+                continue
+            for msg in messages:
+                db.session.add(Notification(user_id=obs.user_id, listing_id=l.id, message=msg))
+        db.session.commit()
+
     return jsonify({"ok": True, "listing": _listing_to_dict(l)}), 200
 
 @listings_bp.delete("/<listing_id>")

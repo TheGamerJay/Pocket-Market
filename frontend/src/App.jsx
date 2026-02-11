@@ -17,6 +17,7 @@ import Signup from "./pages/Signup.jsx";
 import Forgot from "./pages/Forgot.jsx";
 import Reset from "./pages/Reset.jsx";
 import SafeMeetup from "./pages/SafeMeetup.jsx";
+import Notifications from "./pages/Notifications.jsx";
 
 function RequireAuth({ authed, loading, children }){
   const loc = useLocation();
@@ -29,6 +30,7 @@ export default function App(){
   const [me, setMe] = useState({ loading:true, authed:false, user:null });
   const [toast, setToast] = useState("");
   const [unreadChats, setUnreadChats] = useState(0);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -45,9 +47,12 @@ export default function App(){
     if (!me.authed) return;
     const check = async () => {
       try {
-        const res = await api.conversations();
-        const unread = (res.conversations || []).filter(c => c.unread_count > 0).length;
-        setUnreadChats(unread);
+        const [convRes, notifRes] = await Promise.all([
+          api.conversations(),
+          api.unreadNotifCount(),
+        ]);
+        setUnreadChats((convRes.conversations || []).filter(c => c.unread_count > 0).length);
+        setUnreadNotifs(notifRes.count || 0);
       } catch {}
     };
     check();
@@ -75,7 +80,7 @@ export default function App(){
         <Routes>
           <Route path="/" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
-              <Home me={me} notify={notify} />
+              <Home me={me} notify={notify} unreadNotifs={unreadNotifs} />
             </RequireAuth>
           }/>
           <Route path="/search" element={
@@ -116,6 +121,11 @@ export default function App(){
           <Route path="/observing" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
               <Observing me={me} notify={notify} />
+            </RequireAuth>
+          }/>
+          <Route path="/notifications" element={
+            <RequireAuth authed={me.authed} loading={me.loading}>
+              <Notifications notify={notify} />
             </RequireAuth>
           }/>
 

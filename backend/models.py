@@ -159,6 +159,16 @@ class Subscription(db.Model):
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
+class Notification(db.Model):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.String(36), primary_key=True, default=_uuid)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+    listing_id = db.Column(db.String(36), db.ForeignKey("listings.id"), nullable=True, index=True)
+    message = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
 class Ad(db.Model):
     __tablename__ = "ads"
 
