@@ -29,6 +29,7 @@ export const api = {
   forgot: (payload) => req("/api/auth/forgot", { method:"POST", body: payload }),
   reset: (payload) => req("/api/auth/reset", { method:"POST", body: payload }),
 
+  search: (params) => req(`/api/listings/search?${new URLSearchParams(params)}`),
   feed: () => req("/api/listings"),
   listing: (id) => req(`/api/listings/${id}`),
   createListing: (payload) => req("/api/listings", { method:"POST", body: payload }),

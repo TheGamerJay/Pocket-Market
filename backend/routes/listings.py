@@ -51,6 +51,30 @@ def _listing_to_dict(l: Listing):
 def uploads(filename):
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
+@listings_bp.get("/search")
+def search():
+    q = (request.args.get("q") or "").strip()
+    category = (request.args.get("category") or "").strip()
+    city = (request.args.get("city") or "").strip()
+
+    query = Listing.query.filter_by(is_sold=False)
+
+    if q:
+        query = query.filter(
+            db.or_(
+                Listing.title.ilike(f"%{q}%"),
+                Listing.description.ilike(f"%{q}%"),
+            )
+        )
+    if category:
+        query = query.filter_by(category=category)
+    if city:
+        query = query.filter(Listing.city.ilike(f"%{city}%"))
+
+    results = query.order_by(Listing.created_at.desc()).limit(50).all()
+    return jsonify({"listings": [_listing_to_dict(l) for l in results]}), 200
+
+
 @listings_bp.get("")
 def feed():
     listings = Listing.query.order_by(Listing.created_at.desc()).limit(50).all()
