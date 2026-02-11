@@ -14,7 +14,7 @@ export default function BottomNav(){
     <div style={{
       position: "fixed", left: 0, right: 0, bottom: 0,
       padding: "8px 10px 12px",
-      background: "rgba(14,18,26,.88)",
+      background: "rgba(14,18,26,.97)",
       borderTop: "1px solid var(--border)",
       backdropFilter: "blur(10px)",
       zIndex: 10,

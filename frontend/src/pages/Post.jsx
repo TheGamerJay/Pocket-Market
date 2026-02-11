@@ -79,7 +79,7 @@ export default function Post({ notify }){
             <div className="muted" style={{fontSize:13}}>Category</div>
             <select value={category} onChange={e=>setCategory(e.target.value)} style={{
               width:"100%", padding:"12px 12px", borderRadius:14,
-              border:"1px solid var(--border)", background:"rgba(255,255,255,.04)",
+              border:"1px solid var(--border)", background:"#1a1f2b",
               color:"var(--text)", outline:"none", fontSize:14,
             }}>
               <option value="electronics">Electronics</option>
@@ -99,7 +99,7 @@ export default function Post({ notify }){
             <div className="muted" style={{fontSize:13}}>Condition</div>
             <select value={condition} onChange={e=>setCondition(e.target.value)} style={{
               width:"100%", padding:"12px 12px", borderRadius:14,
-              border:"1px solid var(--border)", background:"rgba(255,255,255,.04)",
+              border:"1px solid var(--border)", background:"#1a1f2b",
               color:"var(--text)", outline:"none", fontSize:14,
             }}>
               <option value="new">New</option>
