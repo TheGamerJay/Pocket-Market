@@ -15,7 +15,14 @@ export default function Post({ notify }){
   const [city, setCity] = useState("");
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [busy, setBusy] = useState(false);
+
+  const onFilesChange = (e) => {
+    const picked = Array.from(e.target.files || []);
+    setFiles(picked);
+    setPreviews(picked.map(f => URL.createObjectURL(f)));
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -75,8 +82,18 @@ export default function Post({ notify }){
               type="file"
               multiple
               accept="image/png,image/jpeg,image/jpg,image/webp"
-              onChange={(e)=>setFiles(Array.from(e.target.files || []))}
+              onChange={onFilesChange}
             />
+            {previews.length > 0 && (
+              <div style={{ display:"flex", gap:8, overflowX:"auto", paddingTop:4 }}>
+                {previews.map((src, i) => (
+                  <img key={i} src={src} alt="" style={{
+                    width:72, height:72, objectFit:"cover", borderRadius:10,
+                    flexShrink:0, border:"1px solid var(--border)",
+                  }} />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="col" style={{gap:8}}>
