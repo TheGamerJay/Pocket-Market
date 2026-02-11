@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 
 from sqlalchemy import func
 from extensions import db
-from models import Listing, ListingImage, SafeMeetLocation, Boost, Observing, Notification, User
+from models import Listing, ListingImage, SafeMeetLocation, Boost, Observing, Notification, User, PriceHistory
 
 listings_bp = Blueprint("listings", __name__)
 
@@ -20,9 +20,12 @@ def _listing_to_dict(l: Listing):
     ).first()
     observing_count = db.session.query(func.count(Observing.id)).filter_by(listing_id=l.id).scalar()
 
+    seller = db.session.get(User, l.user_id)
     return {
         "id": l.id,
         "user_id": l.user_id,
+        "seller_name": (seller.display_name or seller.email) if seller else "Unknown",
+        "seller_avatar": seller.avatar_url if seller else None,
         "title": l.title,
         "description": l.description,
         "price_cents": l.price_cents,
@@ -45,7 +48,7 @@ def _listing_to_dict(l: Listing):
         },
         "is_boosted": bool(active_boost),
         "observing_count": observing_count,
-        "is_pro_seller": bool(db.session.get(User, l.user_id) and db.session.get(User, l.user_id).is_pro),
+        "is_pro_seller": bool(seller and seller.is_pro),
     }
 
 @listings_bp.get("/uploads/<path:filename>")
@@ -155,6 +158,10 @@ def update_listing(listing_id):
     if "is_sold" in data:
         l.is_sold = bool(data.get("is_sold"))
 
+    # Track price history
+    if "price_cents" in data and l.price_cents != old_price:
+        db.session.add(PriceHistory(listing_id=l.id, old_cents=old_price, new_cents=l.price_cents))
+
     db.session.commit()
 
     # Notify observers about meaningful changes
@@ -236,3 +243,37 @@ def upload_images(listing_id):
 
     db.session.commit()
     return jsonify({"ok": True, "images": saved}), 201
+
+
+@listings_bp.get("/<listing_id>/similar")
+def similar_listings(listing_id):
+    l = db.session.get(Listing, listing_id)
+    if not l:
+        return jsonify({"listings": []}), 200
+
+    similar = Listing.query.filter(
+        Listing.category == l.category,
+        Listing.id != l.id,
+        Listing.is_sold == False,
+    ).order_by(Listing.created_at.desc()).limit(6).all()
+
+    result = []
+    for s in similar:
+        img = ListingImage.query.filter_by(listing_id=s.id).order_by(ListingImage.created_at.asc()).first()
+        result.append({
+            "id": s.id,
+            "title": s.title,
+            "price_cents": s.price_cents,
+            "image": img.image_url if img else None,
+            "created_at": s.created_at.isoformat(),
+        })
+    return jsonify({"listings": result}), 200
+
+
+@listings_bp.get("/<listing_id>/price-history")
+def price_history(listing_id):
+    rows = PriceHistory.query.filter_by(listing_id=listing_id).order_by(PriceHistory.changed_at.asc()).all()
+    return jsonify({"history": [
+        {"old_cents": r.old_cents, "new_cents": r.new_cents, "changed_at": r.changed_at.isoformat()}
+        for r in rows
+    ]}), 200

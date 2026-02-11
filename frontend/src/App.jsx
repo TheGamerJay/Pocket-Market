@@ -22,6 +22,8 @@ import Pro from "./pages/Pro.jsx";
 import Support from "./pages/Support.jsx";
 import Terms from "./pages/Terms.jsx";
 import Privacy from "./pages/Privacy.jsx";
+import SellerProfile from "./pages/SellerProfile.jsx";
+import SavedSearches from "./pages/SavedSearches.jsx";
 
 function RequireAuth({ authed, loading, children }){
   const loc = useLocation();
@@ -140,6 +142,16 @@ export default function App(){
           <Route path="/support" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
               <Support me={me} notify={notify} />
+            </RequireAuth>
+          }/>
+          <Route path="/seller/:id" element={
+            <RequireAuth authed={me.authed} loading={me.loading}>
+              <SellerProfile me={me} notify={notify} />
+            </RequireAuth>
+          }/>
+          <Route path="/saved-searches" element={
+            <RequireAuth authed={me.authed} loading={me.loading}>
+              <SavedSearches notify={notify} />
             </RequireAuth>
           }/>
           <Route path="/terms" element={<Terms />} />

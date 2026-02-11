@@ -160,6 +160,9 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
         </button>
       </div>
 
+      {/* ── Recently Viewed ── */}
+      <RecentlyViewed />
+
       {/* ── Nearby Items ── */}
       <div className="section-header">
         <span className="h2">{activeCategory === "All" ? "Nearby Items" : activeCategory}</span>
@@ -217,6 +220,46 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
               </Card>
             )}
           </React.Fragment>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function RecentlyViewed(){
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    try {
+      const recent = JSON.parse(localStorage.getItem("pm_recent") || "[]");
+      setItems(recent.slice(0, 6));
+    } catch {}
+  }, []);
+
+  if (items.length === 0) return null;
+
+  return (
+    <>
+      <div className="section-header" style={{ marginTop:6 }}>
+        <span className="h2">Recently Viewed</span>
+        <IconChevronRight size={18} color="var(--muted)" />
+      </div>
+      <div style={{ display:"flex", gap:10, overflowX:"auto", paddingBottom:4 }}>
+        {items.map(l => (
+          <Link key={l.id} to={`/listing/${l.id}`} style={{ minWidth:120, flexShrink:0 }}>
+            <Card noPadding>
+              {l.image ? (
+                <img src={`${api.base}${l.image}`} alt={l.title} className="card-image" />
+              ) : (
+                <div className="card-image-placeholder"><IconCamera size={24} /></div>
+              )}
+              <div style={{ padding:"6px 8px" }}>
+                <div style={{ fontWeight:700, fontSize:11, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                  {l.title}
+                </div>
+                <div style={{ fontWeight:800, fontSize:11, marginTop:2 }}>{money(l.price_cents)}</div>
+              </div>
+            </Card>
+          </Link>
         ))}
       </div>
     </>

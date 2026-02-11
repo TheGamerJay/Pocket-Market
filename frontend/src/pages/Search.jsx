@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Card from "../components/Card.jsx";
 import { IconSearch, IconBack, IconCamera, IconEye } from "../components/Icons.jsx";
 import { api } from "../api.js";
@@ -26,8 +26,17 @@ export default function Search({ notify }){
   const [searched, setSearched] = useState(false);
   const inputRef = useRef(null);
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) {
+      setQuery(q);
+      doSearch(q);
+    } else {
+      inputRef.current?.focus();
+    }
+  }, []);
 
   const doSearch = async (q) => {
     const term = (q ?? query).trim();
@@ -88,7 +97,21 @@ export default function Search({ notify }){
         </div>
       ) : (
         <>
-          <div className="muted" style={{ fontSize:12, marginBottom:8 }}>{results.length} result{results.length !== 1 ? "s" : ""}</div>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+            <div className="muted" style={{ fontSize:12 }}>{results.length} result{results.length !== 1 ? "s" : ""}</div>
+            <button onClick={async () => {
+              try {
+                await api.saveSearch({ query });
+                notify("Search saved!");
+              } catch(err) { notify(err.message); }
+            }} style={{
+              background:"none", border:"1px solid var(--border)", borderRadius:8,
+              color:"var(--cyan)", fontSize:11, fontWeight:700, padding:"4px 10px",
+              cursor:"pointer", fontFamily:"inherit",
+            }}>
+              Save Search
+            </button>
+          </div>
           <div className="grid">
             {results.map(l => (
               <Link key={l.id} to={`/listing/${l.id}`}>

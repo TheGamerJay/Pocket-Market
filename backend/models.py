@@ -169,6 +169,57 @@ class Notification(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
+class Offer(db.Model):
+    __tablename__ = "offers"
+
+    id = db.Column(db.String(36), primary_key=True, default=_uuid)
+    listing_id = db.Column(db.String(36), db.ForeignKey("listings.id"), nullable=False, index=True)
+    buyer_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+    seller_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+    amount_cents = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(32), nullable=False, default="pending")  # "pending"|"accepted"|"declined"|"countered"
+    counter_cents = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+class SavedSearch(db.Model):
+    __tablename__ = "saved_searches"
+
+    id = db.Column(db.String(36), primary_key=True, default=_uuid)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+    query = db.Column(db.String(255), nullable=False)
+    category = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+class BlockedUser(db.Model):
+    __tablename__ = "blocked_users"
+
+    id = db.Column(db.String(36), primary_key=True, default=_uuid)
+    blocker_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+    blocked_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (db.UniqueConstraint("blocker_id", "blocked_id", name="uq_block_pair"),)
+
+class Report(db.Model):
+    __tablename__ = "reports"
+
+    id = db.Column(db.String(36), primary_key=True, default=_uuid)
+    reporter_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+    reported_user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True, index=True)
+    listing_id = db.Column(db.String(36), db.ForeignKey("listings.id"), nullable=True, index=True)
+    reason = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(32), default="open")  # "open"|"reviewed"|"resolved"
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+class PriceHistory(db.Model):
+    __tablename__ = "price_history"
+
+    id = db.Column(db.String(36), primary_key=True, default=_uuid)
+    listing_id = db.Column(db.String(36), db.ForeignKey("listings.id"), nullable=False, index=True)
+    old_cents = db.Column(db.Integer, nullable=False)
+    new_cents = db.Column(db.Integer, nullable=False)
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
 class Ad(db.Model):
     __tablename__ = "ads"
 

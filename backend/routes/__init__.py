@@ -8,6 +8,9 @@ from .billing import billing_bp
 from .ads import ads_bp
 from .oauth import oauth_bp, init_oauth
 from .notifications import notifications_bp
+from .offers import offers_bp
+from .saved_searches import saved_searches_bp
+from .users import users_bp
 
 def register_blueprints(app):
     init_oauth(app)
@@ -21,3 +24,6 @@ def register_blueprints(app):
     app.register_blueprint(ads_bp, url_prefix="/api/ads")
     app.register_blueprint(oauth_bp, url_prefix="/api/auth")
     app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
+    app.register_blueprint(offers_bp, url_prefix="/api/offers")
+    app.register_blueprint(saved_searches_bp, url_prefix="/api/saved-searches")
+    app.register_blueprint(users_bp, url_prefix="/api/users")

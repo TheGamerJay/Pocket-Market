@@ -62,6 +62,7 @@ export const api = {
 
   featured: () => req("/api/boosts/featured"),
   boostDurations: () => req("/api/boosts/durations"),
+  activateBoost: (payload) => req("/api/boosts/activate", { method:"POST", body: payload }),
 
   billingStatus: () => req("/api/billing/status"),
   setPro: (is_pro) => req("/api/billing/set-pro", { method:"POST", body: { is_pro } }),
@@ -71,4 +72,19 @@ export const api = {
   notifications: () => req("/api/notifications"),
   unreadNotifCount: () => req("/api/notifications/unread-count"),
   markNotifsRead: () => req("/api/notifications/mark-read", { method:"POST" }),
+
+  similarListings: (id) => req(`/api/listings/${id}/similar`),
+  priceHistory: (id) => req(`/api/listings/${id}/price-history`),
+
+  makeOffer: (payload) => req("/api/offers/make", { method:"POST", body: payload }),
+  listingOffers: (listingId) => req(`/api/offers/listing/${listingId}`),
+  respondOffer: (offerId, payload) => req(`/api/offers/${offerId}/respond`, { method:"POST", body: payload }),
+
+  savedSearches: () => req("/api/saved-searches"),
+  saveSearch: (payload) => req("/api/saved-searches", { method:"POST", body: payload }),
+  deleteSavedSearch: (id) => req(`/api/saved-searches/${id}`, { method:"DELETE" }),
+
+  userProfile: (userId) => req(`/api/users/${userId}/profile`),
+  toggleBlock: (userId) => req(`/api/users/${userId}/block`, { method:"POST" }),
+  reportUser: (userId, payload) => req(`/api/users/${userId}/report`, { method:"POST", body: payload }),
 };

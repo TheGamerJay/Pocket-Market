@@ -105,13 +105,18 @@ export default function Profile({ me, notify, refreshMe }){
       </Card>
 
       {/* Quick links */}
-      <div style={{ display:"flex", gap:10, marginTop:12 }}>
-        <Link to="/observing" style={{ flex:1, textDecoration:"none" }}>
+      <div style={{ display:"flex", gap:10, marginTop:12, flexWrap:"wrap" }}>
+        <Link to="/observing" style={{ flex:1, minWidth:"45%", textDecoration:"none" }}>
           <div className="panel" style={{ padding:"14px 16px", borderRadius:14, textAlign:"center" }}>
             <div style={{ fontWeight:700, fontSize:14 }}>Observing</div>
           </div>
         </Link>
-        <Link to="/pro" style={{ flex:1, textDecoration:"none" }}>
+        <Link to="/saved-searches" style={{ flex:1, minWidth:"45%", textDecoration:"none" }}>
+          <div className="panel" style={{ padding:"14px 16px", borderRadius:14, textAlign:"center" }}>
+            <div style={{ fontWeight:700, fontSize:14 }}>Saved Searches</div>
+          </div>
+        </Link>
+        <Link to="/pro" style={{ flex:1, minWidth:"45%", textDecoration:"none" }}>
           <div className="panel" style={{
             padding:"14px 16px", borderRadius:14, textAlign:"center",
             background: me.user.is_pro
