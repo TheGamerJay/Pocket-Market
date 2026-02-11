@@ -201,8 +201,18 @@ export default function Listing({ me, notify }){
             <div style={{ fontWeight:800, fontSize:20, color:"var(--cyan)" }}>{money(listing.price_cents)}</div>
           </div>
 
-          {/* ── Condition ── */}
-          <div className="muted" style={{ fontSize:14, marginTop:4 }}>{listing.condition}</div>
+          {/* ── Condition + Pro badge ── */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:4 }}>
+            <span className="muted" style={{ fontSize:14 }}>{listing.condition}</span>
+            {listing.is_pro_seller && (
+              <span style={{
+                background:"linear-gradient(135deg, rgba(62,224,255,.25), rgba(164,122,255,.22))",
+                border:"1px solid rgba(62,224,255,.40)",
+                padding:"2px 8px", borderRadius:6,
+                fontSize:10, fontWeight:800, color:"var(--cyan)",
+              }}>PRO Seller</span>
+            )}
+          </div>
 
           {/* ── Description ── */}
           {listing.description && (

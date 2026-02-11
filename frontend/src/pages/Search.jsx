@@ -107,6 +107,14 @@ export default function Search({ notify }){
                         borderRadius:5, letterSpacing:0.5,
                       }}>SOLD</div>
                     )}
+                    {l.is_pro_seller && !l.is_sold && (
+                      <div style={{
+                        position:"absolute", top:6, right:6,
+                        background:"linear-gradient(135deg, var(--cyan), var(--violet))", color:"#fff",
+                        fontSize:8, fontWeight:800, padding:"2px 5px",
+                        borderRadius:4, letterSpacing:0.5,
+                      }}>PRO</div>
+                    )}
                   </div>
                   <div style={{ padding:"8px 10px" }}>
                     <div style={{ fontWeight:700, fontSize:12, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>

@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 
 from sqlalchemy import func
 from extensions import db
-from models import Listing, ListingImage, SafeMeetLocation, Boost, Observing, Notification
+from models import Listing, ListingImage, SafeMeetLocation, Boost, Observing, Notification, User
 
 listings_bp = Blueprint("listings", __name__)
 
@@ -44,7 +44,8 @@ def _listing_to_dict(l: Listing):
             "place_type": meet.place_type
         },
         "is_boosted": bool(active_boost),
-        "observing_count": observing_count
+        "observing_count": observing_count,
+        "is_pro_seller": bool(db.session.get(User, l.user_id) and db.session.get(User, l.user_id).is_pro),
     }
 
 @listings_bp.get("/uploads/<path:filename>")
@@ -79,13 +80,17 @@ def search():
         query = query.filter(Listing.city.ilike(f"%{city}%"))
 
     results = query.order_by(Listing.created_at.desc()).limit(50).all()
-    return jsonify({"listings": [_listing_to_dict(l) for l in results]}), 200
+    dicts = [_listing_to_dict(l) for l in results]
+    dicts.sort(key=lambda d: (not d["is_pro_seller"], 0))
+    return jsonify({"listings": dicts}), 200
 
 
 @listings_bp.get("")
 def feed():
     listings = Listing.query.order_by(Listing.created_at.desc()).limit(50).all()
-    return jsonify({"listings": [_listing_to_dict(l) for l in listings]}), 200
+    dicts = [_listing_to_dict(l) for l in listings]
+    dicts.sort(key=lambda d: (not d["is_pro_seller"], 0))
+    return jsonify({"listings": dicts}), 200
 
 @listings_bp.get("/<listing_id>")
 def get_listing(listing_id):
@@ -208,6 +213,11 @@ def upload_images(listing_id):
     files = request.files.getlist("files")
     if not files:
         return jsonify({"error": "No files"}), 400
+
+    max_photos = 10 if current_user.is_pro else 5
+    existing = ListingImage.query.filter_by(listing_id=l.id).count()
+    if existing + len(files) > max_photos:
+        return jsonify({"error": f"Max {max_photos} photos{' (upgrade to Pro for 10)' if not current_user.is_pro else ''}"}), 400
 
     saved = []
     folder = current_app.config["UPLOAD_FOLDER"]

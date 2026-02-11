@@ -50,15 +50,6 @@ export default function Profile({ me, notify, refreshMe }){
     );
   }
 
-  const togglePro = async () => {
-    try{
-      const next = !me.user.is_pro;
-      await api.setPro(next);
-      await refreshMe();
-      notify(next ? "Pro enabled" : "Pro disabled");
-    }catch(err){ notify(err.message); }
-  };
-
   const logout = async () => {
     try{
       await api.logout();
@@ -120,13 +111,19 @@ export default function Profile({ me, notify, refreshMe }){
             <div style={{ fontWeight:700, fontSize:14 }}>Observing</div>
           </div>
         </Link>
-        <div onClick={togglePro} style={{ flex:1, cursor:"pointer" }}>
-          <div className="panel" style={{ padding:"14px 16px", borderRadius:14, textAlign:"center" }}>
-            <div style={{ fontWeight:700, fontSize:14 }}>
-              {me.user.is_pro ? "Cancel Pro" : "Go Pro"}
+        <Link to="/pro" style={{ flex:1, textDecoration:"none" }}>
+          <div className="panel" style={{
+            padding:"14px 16px", borderRadius:14, textAlign:"center",
+            background: me.user.is_pro
+              ? "linear-gradient(135deg, rgba(62,224,255,.15), rgba(164,122,255,.15))"
+              : "var(--panel)",
+            border: me.user.is_pro ? "1px solid rgba(62,224,255,.30)" : "1px solid var(--border)",
+          }}>
+            <div style={{ fontWeight:700, fontSize:14, color: me.user.is_pro ? "var(--cyan)" : "var(--text)" }}>
+              {me.user.is_pro ? "Pro Member" : "Go Pro"}
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* My Listings */}

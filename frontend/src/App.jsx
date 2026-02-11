@@ -18,6 +18,7 @@ import Forgot from "./pages/Forgot.jsx";
 import Reset from "./pages/Reset.jsx";
 import SafeMeetup from "./pages/SafeMeetup.jsx";
 import Notifications from "./pages/Notifications.jsx";
+import Pro from "./pages/Pro.jsx";
 
 function RequireAuth({ authed, loading, children }){
   const loc = useLocation();
@@ -126,6 +127,11 @@ export default function App(){
           <Route path="/notifications" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
               <Notifications notify={notify} />
+            </RequireAuth>
+          }/>
+          <Route path="/pro" element={
+            <RequireAuth authed={me.authed} loading={me.loading}>
+              <Pro me={me} notify={notify} refreshMe={refreshMe} />
             </RequireAuth>
           }/>
 
