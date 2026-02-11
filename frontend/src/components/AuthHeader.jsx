@@ -15,7 +15,7 @@ export default function AuthHeader({ title }){
       </div>
       <div className="auth-header">
         <div className="auth-logo" style={{ justifyContent:"center" }}>
-          <img src="/pocketmarket_favicon_transparent_512x512.png" alt="Pocket Market" style={{ width:180, height:180 }} />
+          <img src="/pocketmarket_favicon_transparent_512x512.png" alt="Pocket Market" style={{ width:240, height:240 }} />
         </div>
         <h1 style={{ fontSize:24, fontWeight:800, marginTop:16, marginBottom:0 }}>{title}</h1>
       </div>
