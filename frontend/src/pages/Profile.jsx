@@ -86,7 +86,7 @@ export default function Profile({ me, notify, refreshMe }){
             }}
           >
             {me.user.avatar_url ? (
-              <img src={me.user.avatar_url.startsWith("/") ? `${api.base}${me.user.avatar_url}` : me.user.avatar_url} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+              <img src={me.user.avatar_url.startsWith("/") ? `${api.base}${me.user.avatar_url}` : me.user.avatar_url} alt="" style={{ width:"100%", height:"100%" }} />
             ) : (
               <IconPerson size={30} color="var(--muted)" />
             )}
