@@ -118,15 +118,6 @@ export function IconGoogle({ size = 22 }) {
   );
 }
 
-export function IconFacebook({ size = 22 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="11" fill="#1877F2" />
-      <path d="M16.67 15.13l.55-3.58h-3.44v-2.32c0-.98.48-1.93 2.01-1.93h1.56V4.17s-1.41-.24-2.77-.24c-2.83 0-4.68 1.72-4.68 4.82v2.73H7v3.58h2.9V23.6a11.5 11.5 0 003.58 0v-8.47h2.89z" fill="#fff" />
-    </svg>
-  );
-}
-
 export function IconBell({ size = 22, color = "currentColor" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"

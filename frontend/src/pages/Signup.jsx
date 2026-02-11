@@ -61,8 +61,8 @@ export default function Signup({ notify }){
 
         <div className="muted" style={{ fontSize:12, textAlign:"center", lineHeight:1.5 }}>
           By signing up, you agree to our{" "}
-          <span style={{ textDecoration:"underline", cursor:"pointer" }}>Terms of Service</span> and{" "}
-          <span style={{ textDecoration:"underline", cursor:"pointer" }}>Privacy Policy</span>.
+          <Link to="/terms" style={{ color:"var(--cyan)", textDecoration:"underline" }}>Terms of Service</Link> and{" "}
+          <Link to="/privacy" style={{ color:"var(--cyan)", textDecoration:"underline" }}>Privacy Policy</Link>.
         </div>
 
         <Button disabled={busy}>{busy ? "Creating..." : "Create Account"}</Button>
