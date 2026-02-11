@@ -43,7 +43,7 @@ export default function Home({ me, notify }){
     <>
       {/* ── Header ── */}
       <div style={{ display:"flex", justifyContent:"center", padding:"14px 0 6px" }}>
-        <img src="/pocketmarket_favicon_transparent_512x512.png" alt="Pocket Market" style={{ width:480, height:480 }} />
+        <img src="/pocketmarket_favicon_transparent_512x512.png" alt="Pocket Market" style={{ width:360, height:360 }} />
       </div>
 
       {/* ── Search bar ── */}
