@@ -61,6 +61,8 @@ def create_app():
         changed |= _add_col("users", "onboarding_done", "BOOLEAN DEFAULT FALSE")
         changed |= _add_col("listings", "renewed_at", "TIMESTAMP WITH TIME ZONE")
         changed |= _add_col("listings", "bundle_discount_pct", "INTEGER")
+        changed |= _add_col("listings", "is_draft", "BOOLEAN DEFAULT FALSE")
+        changed |= _add_col("messages", "image_url", "TEXT")
         if changed:
             db.session.commit()
 

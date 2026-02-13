@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify
+import os, uuid
+from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 
 from extensions import db
@@ -85,6 +86,7 @@ def get_messages(conversation_id):
             "id": m.id,
             "sender_id": m.sender_id,
             "body": m.body,
+            "image_url": m.image_url,
             "created_at": m.created_at.isoformat()
         } for m in msgs]
     }), 200
@@ -108,3 +110,34 @@ def send_message(conversation_id):
     db.session.commit()
 
     return jsonify({"ok": True, "message_id": m.id}), 201
+
+
+@messages_bp.post("/<conversation_id>/image")
+@login_required
+def send_chat_image(conversation_id):
+    c = db.session.get(Conversation, conversation_id)
+    if not c:
+        return jsonify({"error": "Not found"}), 404
+    if current_user.id not in [c.buyer_id, c.seller_id]:
+        return jsonify({"error": "Forbidden"}), 403
+
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    f = request.files["file"]
+    ext = os.path.splitext(f.filename)[1].lower()
+    if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
+        return jsonify({"error": "Only jpg/jpeg/png/webp allowed"}), 400
+
+    folder = current_app.config["UPLOAD_FOLDER"]
+    os.makedirs(folder, exist_ok=True)
+    name = f"{uuid.uuid4().hex}{ext}"
+    path = os.path.join(folder, name)
+    f.save(path)
+    url = f"/api/listings/uploads/{name}"
+
+    m = Message(conversation_id=conversation_id, sender_id=current_user.id, body="[Image]", image_url=url)
+    db.session.add(m)
+    db.session.commit()
+
+    return jsonify({"ok": True, "message_id": m.id, "image_url": url}), 201

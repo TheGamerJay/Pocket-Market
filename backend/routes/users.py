@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 
 from sqlalchemy import func
 from extensions import db
-from models import User, Listing, ListingImage, BlockedUser, Report
+from models import User, Listing, ListingImage, BlockedUser, Report, Conversation, Message
 
 users_bp = Blueprint("users", __name__)
 
@@ -17,6 +17,27 @@ def public_profile(user_id):
 
     listings = Listing.query.filter_by(user_id=user_id).order_by(Listing.created_at.desc()).all()
     sold_count = sum(1 for l in listings if l.is_sold)
+
+    # Calculate average response time
+    avg_response_minutes = None
+    try:
+        seller_convs = Conversation.query.filter_by(seller_id=user_id).all()
+        response_times = []
+        for conv in seller_convs[:20]:  # limit to recent 20
+            msgs = Message.query.filter_by(conversation_id=conv.id).order_by(Message.created_at.asc()).limit(5).all()
+            buyer_msg = None
+            for m in msgs:
+                if m.sender_id != user_id and buyer_msg is None:
+                    buyer_msg = m
+                elif m.sender_id == user_id and buyer_msg is not None:
+                    diff = (m.created_at - buyer_msg.created_at).total_seconds() / 60
+                    if diff > 0:
+                        response_times.append(diff)
+                    break
+        if response_times:
+            avg_response_minutes = round(sum(response_times) / len(response_times))
+    except:
+        pass
 
     listing_dicts = []
     for l in listings:
@@ -44,6 +65,7 @@ def public_profile(user_id):
             "member_since": u.created_at.isoformat(),
             "listings_count": len(listings),
             "sold_count": sold_count,
+            "avg_response_minutes": avg_response_minutes,
             "is_blocked": is_blocked,
         },
         "listings": listing_dicts,

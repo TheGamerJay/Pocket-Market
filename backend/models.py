@@ -57,6 +57,7 @@ class Listing(db.Model):
 
     pickup_or_shipping = db.Column(db.String(16), nullable=False)  # "pickup"|"shipping"
     is_sold = db.Column(db.Boolean, default=False)
+    is_draft = db.Column(db.Boolean, default=False)
     buyer_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True, index=True)
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
@@ -101,6 +102,7 @@ class Message(db.Model):
     conversation_id = db.Column(db.String(36), db.ForeignKey("conversations.id"), nullable=False, index=True)
     sender_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
     body = db.Column(db.Text, nullable=False)
+    image_url = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
 class SafeMeetLocation(db.Model):
@@ -247,4 +249,20 @@ class Ad(db.Model):
     link_url = db.Column(db.Text)
     active = db.Column(db.Boolean, default=True)
 
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+class ListingView(db.Model):
+    __tablename__ = "listing_views"
+    id = db.Column(db.String(36), primary_key=True, default=_uuid)
+    listing_id = db.Column(db.String(36), db.ForeignKey("listings.id"), nullable=False, index=True)
+    viewer_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+class MeetupConfirmation(db.Model):
+    __tablename__ = "meetup_confirmations"
+    id = db.Column(db.String(36), primary_key=True, default=_uuid)
+    listing_id = db.Column(db.String(36), db.ForeignKey("listings.id"), nullable=False, index=True)
+    token = db.Column(db.String(64), unique=True, nullable=False)
+    buyer_confirmed = db.Column(db.Boolean, default=False)
+    seller_confirmed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
