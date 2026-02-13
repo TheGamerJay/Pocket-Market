@@ -26,6 +26,8 @@ def create_review():
         return jsonify({"error": "Can't review yourself"}), 400
     if not l.is_sold:
         return jsonify({"error": "Can only review sold items"}), 400
+    if l.buyer_id != current_user.id:
+        return jsonify({"error": "Only the buyer can leave a review"}), 403
 
     existing = Review.query.filter_by(reviewer_id=current_user.id, listing_id=listing_id).first()
     if existing:
@@ -101,6 +103,10 @@ def can_review(listing_id):
 
     # Must be sold
     if not l.is_sold:
+        return jsonify({"can_review": False}), 200
+
+    # Only the buyer can review
+    if l.buyer_id != current_user.id:
         return jsonify({"can_review": False}), 200
 
     # Already reviewed

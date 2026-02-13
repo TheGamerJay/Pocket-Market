@@ -75,6 +75,10 @@ def respond_offer(offer_id):
 
     if action == "accept":
         offer.status = "accepted"
+        # Mark listing as sold and record the buyer
+        if l:
+            l.is_sold = True
+            l.buyer_id = offer.buyer_id
         db.session.add(Notification(
             user_id=offer.buyer_id,
             listing_id=offer.listing_id,
