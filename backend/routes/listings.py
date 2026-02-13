@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from flask_login import login_required, current_user
 
@@ -46,6 +46,8 @@ def _listing_to_dict(l: Listing):
             "lng": float(meet.lng),
             "place_type": meet.place_type
         },
+        "renewed_at": l.renewed_at.isoformat() if l.renewed_at else None,
+        "bundle_discount_pct": l.bundle_discount_pct,
         "is_boosted": bool(active_boost),
         "observing_count": observing_count,
         "is_pro_seller": bool(seller and seller.is_pro),
@@ -62,11 +64,20 @@ def my_listings():
     return jsonify({"listings": [_listing_to_dict(l) for l in rows]}), 200
 
 
+@listings_bp.get("/purchases")
+@login_required
+def purchases():
+    rows = Listing.query.filter_by(buyer_id=current_user.id).order_by(Listing.created_at.desc()).all()
+    return jsonify({"purchases": [_listing_to_dict(l) for l in rows]}), 200
+
+
 @listings_bp.get("/search")
 def search():
     q = (request.args.get("q") or "").strip()
     category = (request.args.get("category") or "").strip()
     city = (request.args.get("city") or "").strip()
+    page = max(int(request.args.get("page", 1)), 1)
+    per_page = min(max(int(request.args.get("per_page", 20)), 1), 100)
 
     query = Listing.query.filter_by(is_sold=False)
 
@@ -82,18 +93,27 @@ def search():
     if city:
         query = query.filter(Listing.city.ilike(f"%{city}%"))
 
-    results = query.order_by(Listing.created_at.desc()).limit(50).all()
+    results = query.order_by(Listing.created_at.desc()).limit(per_page + 1).offset((page - 1) * per_page).all()
+    has_more = len(results) > per_page
+    results = results[:per_page]
     dicts = [_listing_to_dict(l) for l in results]
     dicts.sort(key=lambda d: (not d["is_pro_seller"], 0))
-    return jsonify({"listings": dicts}), 200
+    return jsonify({"listings": dicts, "page": page, "has_more": has_more}), 200
 
 
 @listings_bp.get("")
 def feed():
-    listings = Listing.query.order_by(Listing.created_at.desc()).limit(50).all()
+    page = max(int(request.args.get("page", 1)), 1)
+    per_page = min(max(int(request.args.get("per_page", 20)), 1), 100)
+
+    query = Listing.query.order_by(Listing.created_at.desc())
+    total_query = query.limit(per_page + 1).offset((page - 1) * per_page).all()
+    has_more = len(total_query) > per_page
+    listings = total_query[:per_page]
+
     dicts = [_listing_to_dict(l) for l in listings]
     dicts.sort(key=lambda d: (not d["is_pro_seller"], 0))
-    return jsonify({"listings": dicts}), 200
+    return jsonify({"listings": dicts, "page": page, "has_more": has_more}), 200
 
 @listings_bp.get("/<listing_id>")
 def get_listing(listing_id):
@@ -157,6 +177,10 @@ def update_listing(listing_id):
 
     if "is_sold" in data:
         l.is_sold = bool(data.get("is_sold"))
+
+    if "bundle_discount_pct" in data:
+        val = data.get("bundle_discount_pct")
+        l.bundle_discount_pct = int(val) if val is not None else None
 
     # Track price history
     if "price_cents" in data and l.price_cents != old_price:
@@ -277,3 +301,42 @@ def price_history(listing_id):
         {"old_cents": r.old_cents, "new_cents": r.new_cents, "changed_at": r.changed_at.isoformat()}
         for r in rows
     ]}), 200
+
+
+@listings_bp.post("/<listing_id>/renew")
+@login_required
+def renew_listing(listing_id):
+    l = db.session.get(Listing, listing_id)
+    if not l:
+        return jsonify({"error": "Not found"}), 404
+    if l.user_id != current_user.id:
+        return jsonify({"error": "Forbidden"}), 403
+
+    l.renewed_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({"ok": True, "renewed_at": l.renewed_at.isoformat()}), 200
+
+
+@listings_bp.put("/<listing_id>/images/reorder")
+@login_required
+def reorder_images(listing_id):
+    l = db.session.get(Listing, listing_id)
+    if not l:
+        return jsonify({"error": "Not found"}), 404
+    if l.user_id != current_user.id:
+        return jsonify({"error": "Forbidden"}), 403
+
+    data = request.get_json(force=True)
+    image_ids = data.get("image_ids", [])
+    if not image_ids:
+        return jsonify({"error": "image_ids required"}), 400
+
+    # Assign ascending timestamps in the given order
+    base_time = datetime(2000, 1, 1)
+    for idx, img_id in enumerate(image_ids):
+        img = db.session.get(ListingImage, img_id)
+        if img and img.listing_id == l.id:
+            img.created_at = base_time + timedelta(seconds=idx)
+
+    db.session.commit()
+    return jsonify({"ok": True}), 200

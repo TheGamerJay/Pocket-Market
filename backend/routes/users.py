@@ -40,6 +40,7 @@ def public_profile(user_id):
             "display_name": u.display_name or "User",
             "avatar_url": u.avatar_url,
             "is_pro": u.is_pro,
+            "is_verified": u.is_verified,
             "member_since": u.created_at.isoformat(),
             "listings_count": len(listings),
             "sold_count": sold_count,

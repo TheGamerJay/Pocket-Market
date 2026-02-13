@@ -57,6 +57,10 @@ def create_app():
         changed |= _add_col("users", "rating_count", "INTEGER DEFAULT 0")
         changed |= _add_col("users", "is_pro", "BOOLEAN DEFAULT FALSE")
         changed |= _add_col("listings", "buyer_id", "VARCHAR(36) REFERENCES users(id)")
+        changed |= _add_col("users", "is_verified", "BOOLEAN DEFAULT FALSE")
+        changed |= _add_col("users", "onboarding_done", "BOOLEAN DEFAULT FALSE")
+        changed |= _add_col("listings", "renewed_at", "TIMESTAMP WITH TIME ZONE")
+        changed |= _add_col("listings", "bundle_discount_pct", "INTEGER")
         if changed:
             db.session.commit()
 

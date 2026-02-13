@@ -27,6 +27,8 @@ class User(UserMixin, db.Model):
     rating_count = db.Column(db.Integer, default=0)
 
     is_pro = db.Column(db.Boolean, default=False)
+    is_verified = db.Column(db.Boolean, default=False)
+    onboarding_done = db.Column(db.Boolean, default=False)
 
     def set_password(self, pw: str) -> None:
         self.password_hash = generate_password_hash(pw)
@@ -58,6 +60,8 @@ class Listing(db.Model):
     buyer_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True, index=True)
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    renewed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    bundle_discount_pct = db.Column(db.Integer, nullable=True)  # e.g. 10 for 10% off
 
 class ListingImage(db.Model):
     __tablename__ = "listing_images"

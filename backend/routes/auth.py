@@ -24,9 +24,17 @@ def me():
             "email": current_user.email,
             "display_name": current_user.display_name,
             "is_pro": current_user.is_pro,
-            "avatar_url": current_user.avatar_url
+            "avatar_url": current_user.avatar_url,
+            "onboarding_done": current_user.onboarding_done,
         }
     }), 200
+
+@auth_bp.post("/onboarding-done")
+@login_required
+def onboarding_done():
+    current_user.onboarding_done = True
+    db.session.commit()
+    return jsonify({"ok": True}), 200
 
 @auth_bp.post("/signup")
 def signup():
