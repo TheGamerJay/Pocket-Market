@@ -7,7 +7,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 from extensions import db
 from models import User
-from email_utils import send_welcome
+from email_utils import send_welcome, send_email_sync
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -56,8 +56,33 @@ def signup():
     db.session.commit()
 
     login_user(u)
-    send_welcome(u.email, u.display_name)
-    return jsonify({"ok": True, "user": {"id": u.id, "email": u.email, "display_name": u.display_name}}), 201
+    try:
+        name = display_name or "there"
+        status, result = send_email_sync(
+            to=u.email,
+            subject=f"Welcome to Pocket Market, {name}!",
+            body_html=f"""
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+                <h2 style="color:#3ee0ff;">Welcome to Pocket Market!</h2>
+                <p>Hi {name},</p>
+                <p>Welcome to Pocket Market &mdash; your simple, fast way to buy and sell locally.</p>
+                <p>Here's what you can do right now:</p>
+                <ul style="line-height:2;">
+                    <li><strong>Post items</strong> in seconds (title, price, photo)</li>
+                    <li><strong>Browse listings</strong> and search what you need</li>
+                    <li><strong>Message sellers</strong> directly</li>
+                    <li><strong>Save items</strong> you want to check later</li>
+                </ul>
+                <p>If you ever need help, just reply to this email.</p>
+                <p>Welcome again,<br><strong>Pocket Market Support</strong></p>
+            </div>
+            """,
+            reply_to="pocketmarket.help@gmail.com",
+        )
+        email_debug = {"status": status, "result": result}
+    except Exception as e:
+        email_debug = {"error": str(e)}
+    return jsonify({"ok": True, "user": {"id": u.id, "email": u.email, "display_name": u.display_name}, "email_debug": email_debug}), 201
 
 @auth_bp.post("/login")
 def login():
