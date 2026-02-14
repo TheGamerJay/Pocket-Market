@@ -120,6 +120,25 @@ export default function SellerProfile({ me, notify }){
           )}
         </div>
 
+        {/* Response time */}
+        {profile.avg_response_minutes != null && (
+          <div style={{
+            marginTop:10, padding:"8px 12px", borderRadius:10,
+            background:"rgba(62,224,255,.08)", border:"1px solid rgba(62,224,255,.15)",
+            display:"flex", alignItems:"center", gap:8, fontSize:12,
+          }}>
+            <span>{"\u26A1"}</span>
+            <span style={{ fontWeight:600, color:"var(--cyan)" }}>
+              {profile.avg_response_minutes < 60
+                ? `Responds in ~${profile.avg_response_minutes} min`
+                : profile.avg_response_minutes < 1440
+                  ? `Responds in ~${Math.round(profile.avg_response_minutes / 60)} hr`
+                  : `Responds in ~${Math.round(profile.avg_response_minutes / 1440)} day${Math.round(profile.avg_response_minutes / 1440) !== 1 ? "s" : ""}`
+              }
+            </span>
+          </div>
+        )}
+
         {/* Rating bar */}
         {reviewSummary && reviewSummary.total > 0 && (
           <div style={{ marginTop:12 }}>

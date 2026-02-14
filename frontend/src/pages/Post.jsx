@@ -34,21 +34,22 @@ export default function Post({ notify }){
     setPreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e, isDraft = false) => {
     e.preventDefault();
     if (!title.trim()) { notify("Title is required"); return; }
     const price_cents = Math.round(parseFloat((price || "0").replace(/[^0-9.]/g, "")) * 100);
-    if (!price_cents || price_cents <= 0) { notify("Enter a valid price"); return; }
+    if (!isDraft && (!price_cents || price_cents <= 0)) { notify("Enter a valid price"); return; }
     setBusy(true);
     try{
       const res = await api.createListing({
         title,
         description: desc,
-        price_cents,
+        price_cents: price_cents || 0,
         category,
         condition,
         city,
-        pickup_or_shipping: "pickup"
+        pickup_or_shipping: "pickup",
+        is_draft: isDraft,
       });
 
       const id = res.listing.id;
@@ -57,8 +58,13 @@ export default function Post({ notify }){
         await api.uploadListingImages(id, files);
       }
 
-      notify("Posted.");
-      nav(`/listing/${id}`);
+      if (isDraft) {
+        notify("Saved as draft.");
+        nav("/profile");
+      } else {
+        notify("Posted.");
+        nav(`/listing/${id}`);
+      }
     }catch(err){
       notify(err.message);
     }finally{
@@ -172,6 +178,13 @@ export default function Post({ notify }){
           </div>
 
           <Button disabled={busy}>{busy ? "Posting..." : "Post item"}</Button>
+          <button type="button" disabled={busy} onClick={(e) => onSubmit(e, true)} style={{
+            width:"100%", padding:"12px 16px", borderRadius:14, fontSize:14, fontWeight:700,
+            cursor:"pointer", fontFamily:"inherit",
+            background:"none", border:"1.5px solid var(--border)", color:"var(--muted)",
+          }}>
+            Save as Draft
+          </button>
         </form>
       </Card>
     </>

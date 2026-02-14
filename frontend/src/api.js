@@ -95,4 +95,18 @@ export const api = {
   createReview: (payload) => req("/api/reviews", { method:"POST", body: payload }),
   sellerReviews: (sellerId) => req(`/api/reviews/seller/${sellerId}`),
   canReview: (listingId) => req(`/api/reviews/listing/${listingId}/can-review`),
+
+  trackView: (id) => req(`/api/listings/${id}/view`, { method:"POST" }),
+  myDrafts: () => req("/api/listings/drafts"),
+  publishDraft: (id) => req(`/api/listings/${id}/publish`, { method:"POST" }),
+  bulkAction: (payload) => req("/api/listings/bulk", { method:"POST", body: payload }),
+
+  sendChatImage: (conversationId, file) => {
+    const form = new FormData();
+    form.append("file", file);
+    return req(`/api/messages/${conversationId}/image`, { method:"POST", body: form, isForm:true, headers:{} });
+  },
+
+  createMeetupToken: (listingId) => req(`/api/listings/${listingId}/meetup-token`, { method:"POST" }),
+  confirmMeetup: (token) => req(`/api/listings/meetup-confirm/${token}`, { method:"POST" }),
 };

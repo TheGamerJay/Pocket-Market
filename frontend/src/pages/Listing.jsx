@@ -6,6 +6,7 @@ import Input from "../components/Input.jsx";
 import { IconBack, IconCamera, IconPin, IconEye, IconEnvelope, IconChevronRight, IconPerson } from "../components/Icons.jsx";
 import ListingMap from "../components/ListingMap.jsx";
 import DistanceLabel from "../components/DistanceLabel.jsx";
+import ImageGallery from "../components/ImageGallery.jsx";
 import { api } from "../api.js";
 
 function money(cents){
@@ -49,6 +50,9 @@ export default function Listing({ me, notify }){
   const [existingReview, setExistingReview] = useState(null);
   const [reviewComment, setReviewComment] = useState("");
   const [showReview, setShowReview] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [meetupToken, setMeetupToken] = useState(null);
+  const [meetupStatus, setMeetupStatus] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -75,6 +79,9 @@ export default function Listing({ me, notify }){
       setCanReview(r.can_review);
       if (r.existing_review) setExistingReview(r.existing_review);
     }).catch(() => {});
+
+    // Track view
+    api.trackView(id).catch(() => {});
 
     // Track recently viewed
     try {
@@ -218,7 +225,8 @@ export default function Listing({ me, notify }){
         {images.length > 0 ? (
           <>
             <img src={`${api.base}${images[imgIdx]}`} alt={listing.title}
-                 style={{ width:"100%", height:280, objectFit:"cover", display:"block" }} />
+                 onClick={() => setGalleryOpen(true)}
+                 style={{ width:"100%", height:280, objectFit:"cover", display:"block", cursor:"pointer" }} />
 
             {/* Nav arrows */}
             {images.length > 1 && (
@@ -378,12 +386,23 @@ export default function Listing({ me, notify }){
         </span>
       </div>
 
-      {/* ── Observing count ── */}
-      {listing.observing_count > 0 && (
-        <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:8, fontSize:13, color:"var(--cyan)" }}>
-          <IconEye size={14} /> {listing.observing_count} people observing
-        </div>
-      )}
+      {/* ── Social proof: views + observing ── */}
+      <div style={{ display:"flex", alignItems:"center", gap:14, marginTop:8, flexWrap:"wrap" }}>
+        {listing.view_count > 0 && (
+          <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"var(--muted)" }}>
+            <IconEye size={13} /> {listing.view_count} view{listing.view_count !== 1 ? "s" : ""}
+          </div>
+        )}
+        {listing.observing_count > 0 && (
+          <div style={{
+            display:"flex", alignItems:"center", gap:5, fontSize:12, fontWeight:700,
+            color:"var(--cyan)", padding:"3px 10px", borderRadius:8,
+            background:"rgba(62,224,255,.08)", border:"1px solid rgba(62,224,255,.18)",
+          }}>
+            {"\ud83d\udc41\ufe0f"} {listing.observing_count} watching
+          </div>
+        )}
+      </div>
 
       {/* ── Sold banner ── */}
       {listing.is_sold && (
@@ -703,6 +722,85 @@ export default function Listing({ me, notify }){
         </div>
       )}
 
+      {/* ── Meetup QR Confirmation ── */}
+      {listing.is_sold && (isOwner || me?.user?.id === listing.buyer_id) && (
+        <Card style={{ marginTop:16 }}>
+          <div style={{ fontSize:13, fontWeight:700, marginBottom:8 }}>Meetup Confirmation</div>
+          {!meetupToken ? (
+            <button onClick={async () => {
+              try {
+                const res = await api.createMeetupToken(listing.id);
+                setMeetupToken(res.token);
+                setMeetupStatus({ buyer: res.buyer_confirmed, seller: res.seller_confirmed });
+              } catch(err) { notify(err.message); }
+            }} style={{
+              width:"100%", padding:"10px 0", borderRadius:10, fontSize:13, fontWeight:700,
+              cursor:"pointer", fontFamily:"inherit",
+              background:"linear-gradient(135deg, rgba(62,224,255,.12), rgba(164,122,255,.12))",
+              border:"1px solid var(--border)", color:"var(--cyan)",
+            }}>
+              Generate Meetup QR Code
+            </button>
+          ) : (
+            <div style={{ textAlign:"center" }}>
+              <div style={{
+                display:"inline-block", padding:16, background:"#fff", borderRadius:12, marginBottom:10,
+              }}>
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + "/meetup/" + meetupToken)}`}
+                  alt="Meetup QR"
+                  style={{ width:160, height:160, display:"block" }}
+                />
+              </div>
+              <div className="muted" style={{ fontSize:11, marginBottom:8 }}>
+                Both parties scan to confirm the meetup
+              </div>
+              <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
+                <div style={{
+                  padding:"6px 12px", borderRadius:8, fontSize:11, fontWeight:700,
+                  background: meetupStatus?.seller ? "rgba(46,204,113,.15)" : "var(--panel2)",
+                  border: `1px solid ${meetupStatus?.seller ? "var(--green, #2ecc71)" : "var(--border)"}`,
+                  color: meetupStatus?.seller ? "var(--green, #2ecc71)" : "var(--muted)",
+                }}>
+                  Seller {meetupStatus?.seller ? "\u2713" : "..."}
+                </div>
+                <div style={{
+                  padding:"6px 12px", borderRadius:8, fontSize:11, fontWeight:700,
+                  background: meetupStatus?.buyer ? "rgba(46,204,113,.15)" : "var(--panel2)",
+                  border: `1px solid ${meetupStatus?.buyer ? "var(--green, #2ecc71)" : "var(--border)"}`,
+                  color: meetupStatus?.buyer ? "var(--green, #2ecc71)" : "var(--muted)",
+                }}>
+                  Buyer {meetupStatus?.buyer ? "\u2713" : "..."}
+                </div>
+              </div>
+              {!meetupStatus?.buyer || !meetupStatus?.seller ? (
+                <button onClick={async () => {
+                  try {
+                    const res = await api.confirmMeetup(meetupToken);
+                    setMeetupStatus({ buyer: res.buyer_confirmed, seller: res.seller_confirmed });
+                    if (res.completed) notify("Meetup confirmed by both parties!");
+                    else notify("Your confirmation recorded!");
+                  } catch(err) { notify(err.message); }
+                }} style={{
+                  marginTop:10, padding:"10px 24px", borderRadius:10, fontSize:13, fontWeight:700,
+                  cursor:"pointer", fontFamily:"inherit",
+                  background:"var(--cyan)", border:"none", color:"#000",
+                }}>
+                  Confirm Meetup
+                </button>
+              ) : (
+                <div style={{
+                  marginTop:10, padding:"10px 0", fontSize:14, fontWeight:800,
+                  color:"var(--green, #2ecc71)",
+                }}>
+                  {"\u2705"} Transaction Complete!
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+      )}
+
       {/* ── Safety warnings ── */}
       {warning.length > 0 && (
         <Card style={{ marginTop:16 }}>
@@ -711,6 +809,16 @@ export default function Listing({ me, notify }){
             {warning.map((w,i) => <div key={i}>- {w}</div>)}
           </div>
         </Card>
+      )}
+
+      {/* ── Fullscreen image gallery ── */}
+      {galleryOpen && images.length > 0 && (
+        <ImageGallery
+          images={images}
+          baseUrl={api.base}
+          initialIndex={imgIdx}
+          onClose={() => setGalleryOpen(false)}
+        />
       )}
     </>
   );

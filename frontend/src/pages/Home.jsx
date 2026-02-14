@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Card from "../components/Card.jsx";
 import { IconSearch, IconChevronRight, IconCamera, IconEye, IconBell } from "../components/Icons.jsx";
+import SwipeCards from "../components/SwipeCards.jsx";
 import { api } from "../api.js";
 
 const CATEGORIES = [
@@ -46,6 +47,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [swipeMode, setSwipeMode] = useState(false);
   const nav = useNavigate();
 
   const loadFeed = async (reset = true) => {
@@ -179,8 +181,8 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
         </>
       )}
 
-      {/* ── Refresh ── */}
-      <div style={{ display:"flex", justifyContent:"center", padding:"4px 0" }}>
+      {/* ── Refresh + Swipe mode ── */}
+      <div style={{ display:"flex", justifyContent:"center", gap:12, padding:"4px 0" }}>
         <button onClick={() => loadFeed(true)} disabled={busy} style={{
           background:"none", border:"none", color:"var(--cyan)",
           fontSize:12, fontWeight:700, cursor:"pointer", padding:"4px 12px",
@@ -188,6 +190,16 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
         }}>
           {busy ? "Loading..." : "\u21BB Refresh"}
         </button>
+        {filtered.length > 0 && (
+          <button onClick={() => setSwipeMode(true)} style={{
+            background:"linear-gradient(135deg, rgba(62,224,255,.12), rgba(164,122,255,.12))",
+            border:"1px solid rgba(62,224,255,.25)", borderRadius:16,
+            color:"var(--cyan)", fontSize:12, fontWeight:700,
+            cursor:"pointer", padding:"4px 14px", fontFamily:"inherit",
+          }}>
+            {"\ud83d\udc46"} Swipe Mode
+          </button>
+        )}
       </div>
 
       {/* ── Recently Viewed ── */}
@@ -264,6 +276,15 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
             {loadingMore ? "Loading..." : "Load More"}
           </button>
         </div>
+      )}
+
+      {/* ── Swipe mode overlay ── */}
+      {swipeMode && filtered.length > 0 && (
+        <SwipeCards
+          listings={filtered.filter(l => !l.is_sold)}
+          notify={notify}
+          onClose={() => setSwipeMode(false)}
+        />
       )}
     </>
   );

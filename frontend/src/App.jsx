@@ -26,6 +26,7 @@ import SellerProfile from "./pages/SellerProfile.jsx";
 import SavedSearches from "./pages/SavedSearches.jsx";
 import Purchases from "./pages/Purchases.jsx";
 import Onboarding from "./components/Onboarding.jsx";
+import MeetupConfirm from "./pages/MeetupConfirm.jsx";
 
 // Apply stored theme on load
 (function(){
@@ -165,6 +166,11 @@ export default function App(){
           <Route path="/purchases" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
               <Purchases notify={notify} />
+            </RequireAuth>
+          }/>
+          <Route path="/meetup/:token" element={
+            <RequireAuth authed={me.authed} loading={me.loading}>
+              <MeetupConfirm notify={notify} />
             </RequireAuth>
           }/>
           <Route path="/terms" element={<Terms />} />

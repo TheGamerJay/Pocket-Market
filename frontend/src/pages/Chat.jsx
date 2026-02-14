@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { IconBack, IconSend } from "../components/Icons.jsx";
+import { IconBack, IconSend, IconCamera } from "../components/Icons.jsx";
 import { api } from "../api.js";
 
 function formatTime(iso){
@@ -48,6 +48,17 @@ export default function Chat({ me, notify }){
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
+  const imgRef = useRef(null);
+  const sendImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await api.sendChatImage(id, file);
+      await load();
+    } catch(err) { notify(err.message); }
+    e.target.value = "";
+  };
+
   const myId = me?.user?.id;
 
   return (
@@ -91,7 +102,14 @@ export default function Chat({ me, notify }){
                 borderBottomRightRadius: isMe ? 4 : 16,
                 borderBottomLeftRadius: isMe ? 16 : 4,
               }}>
-                <div style={{ fontSize:14, lineHeight:1.4, wordBreak:"break-word" }}>{m.body}</div>
+                {m.image_url && (
+                  <img src={`${api.base}${m.image_url}`} alt="" style={{
+                    maxWidth:"100%", borderRadius:8, marginBottom:4, display:"block",
+                  }} />
+                )}
+                {m.body !== "[Image]" && (
+                  <div style={{ fontSize:14, lineHeight:1.4, wordBreak:"break-word" }}>{m.body}</div>
+                )}
                 <div style={{
                   fontSize:10, marginTop:4, textAlign:"right",
                   opacity:0.6,
@@ -122,10 +140,19 @@ export default function Chat({ me, notify }){
       )}
 
       {/* Input bar */}
+      <input type="file" accept="image/*" ref={imgRef} onChange={sendImage} style={{ display:"none" }} />
       <div style={{
         display:"flex", gap:8, padding:"10px 0", alignItems:"flex-end",
         borderTop:"1px solid var(--border)", flexShrink:0,
       }}>
+        <button onClick={() => imgRef.current?.click()} style={{
+          width:40, height:40, borderRadius:"50%", flexShrink:0,
+          background:"var(--panel)", border:"1px solid var(--border)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          cursor:"pointer",
+        }}>
+          <IconCamera size={18} color="var(--muted)" />
+        </button>
         <input
           value={body}
           onChange={e => setBody(e.target.value)}

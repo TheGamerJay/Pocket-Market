@@ -14,7 +14,10 @@ function money(cents){
 export default function Profile({ me, notify, refreshMe }){
   const nav = useNavigate();
   const [myListings, setMyListings] = useState([]);
+  const [drafts, setDrafts] = useState([]);
   const [theme, setTheme] = useState(() => localStorage.getItem("pm_theme") || "dark");
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState(new Set());
   const fileRef = useRef(null);
 
   const toggleTheme = () => {
@@ -38,8 +41,9 @@ export default function Profile({ me, notify, refreshMe }){
     if (!me.authed) return;
     (async () => {
       try{
-        const res = await api.myListings();
+        const [res, draftRes] = await Promise.all([api.myListings(), api.myDrafts()]);
         setMyListings(res.listings || []);
+        setDrafts(draftRes.listings || []);
       }catch(err){ notify(err.message); }
     })();
   }, [me.authed]);
@@ -153,9 +157,124 @@ export default function Profile({ me, notify, refreshMe }){
         </button>
       </div>
 
+      {/* Drafts */}
+      {drafts.length > 0 && (
+        <div style={{ marginTop:16 }}>
+          <div className="h2" style={{ marginBottom:10 }}>Drafts ({drafts.length})</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {drafts.map(l => (
+              <div key={l.id} className="panel" style={{
+                display:"flex", gap:12, padding:12, alignItems:"center", borderRadius:14,
+              }}>
+                <div style={{
+                  width:44, height:44, borderRadius:10, overflow:"hidden",
+                  flexShrink:0, background:"var(--panel2)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                }}>
+                  {l.images?.length > 0 ? (
+                    <img src={`${api.base}${l.images[0]}`} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                  ) : (
+                    <IconCamera size={18} color="var(--muted)" />
+                  )}
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontWeight:700, fontSize:13, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                    {l.title || "Untitled Draft"}
+                  </div>
+                  <div className="muted" style={{ fontSize:11, marginTop:2 }}>{money(l.price_cents)}</div>
+                </div>
+                <div style={{ display:"flex", gap:6 }}>
+                  <Link to={`/listing/${l.id}`} style={{
+                    padding:"6px 10px", borderRadius:8, fontSize:11, fontWeight:700,
+                    background:"var(--panel2)", border:"1px solid var(--border)", color:"var(--text)",
+                    textDecoration:"none",
+                  }}>Edit</Link>
+                  <button onClick={async () => {
+                    try {
+                      await api.publishDraft(l.id);
+                      setDrafts(prev => prev.filter(d => d.id !== l.id));
+                      const res = await api.myListings();
+                      setMyListings(res.listings || []);
+                      notify("Draft published!");
+                    } catch(err) { notify(err.message); }
+                  }} style={{
+                    padding:"6px 10px", borderRadius:8, fontSize:11, fontWeight:700,
+                    background:"var(--cyan)", border:"none", color:"#000", cursor:"pointer",
+                  }}>Publish</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* My Listings */}
       <div style={{ marginTop:16 }}>
-        <div className="h2" style={{ marginBottom:10 }}>My Listings</div>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+          <div className="h2">My Listings</div>
+          {myListings.length > 0 && (
+            <button onClick={() => { setSelectMode(!selectMode); setSelected(new Set()); }} style={{
+              background:"none", border:"none", color:"var(--cyan)",
+              fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
+            }}>
+              {selectMode ? "Cancel" : "Select"}
+            </button>
+          )}
+        </div>
+
+        {/* Bulk action bar */}
+        {selectMode && selected.size > 0 && (
+          <div style={{
+            display:"flex", gap:8, marginBottom:10, flexWrap:"wrap",
+          }}>
+            <button onClick={async () => {
+              try {
+                await api.bulkAction({ action:"sold", listing_ids: [...selected] });
+                setMyListings(prev => prev.map(l => selected.has(l.id) ? {...l, is_sold: true} : l));
+                setSelected(new Set()); setSelectMode(false);
+                notify(`${selected.size} listings marked as sold`);
+              } catch(err) { notify(err.message); }
+            }} style={{
+              padding:"8px 14px", borderRadius:10, fontSize:12, fontWeight:700,
+              cursor:"pointer", fontFamily:"inherit",
+              background:"rgba(46,204,113,.12)", border:"1px solid var(--green, #2ecc71)",
+              color:"var(--green, #2ecc71)",
+            }}>
+              Mark Sold ({selected.size})
+            </button>
+            <button onClick={async () => {
+              try {
+                await api.bulkAction({ action:"renew", listing_ids: [...selected] });
+                setSelected(new Set()); setSelectMode(false);
+                notify(`${selected.size} listings renewed`);
+              } catch(err) { notify(err.message); }
+            }} style={{
+              padding:"8px 14px", borderRadius:10, fontSize:12, fontWeight:700,
+              cursor:"pointer", fontFamily:"inherit",
+              background:"rgba(62,224,255,.12)", border:"1px solid var(--cyan)",
+              color:"var(--cyan)",
+            }}>
+              Renew ({selected.size})
+            </button>
+            <button onClick={async () => {
+              if (!window.confirm(`Delete ${selected.size} listings? This can't be undone.`)) return;
+              try {
+                await api.bulkAction({ action:"delete", listing_ids: [...selected] });
+                setMyListings(prev => prev.filter(l => !selected.has(l.id)));
+                setSelected(new Set()); setSelectMode(false);
+                notify(`${selected.size} listings deleted`);
+              } catch(err) { notify(err.message); }
+            }} style={{
+              padding:"8px 14px", borderRadius:10, fontSize:12, fontWeight:700,
+              cursor:"pointer", fontFamily:"inherit",
+              background:"rgba(231,76,60,.12)", border:"1px solid var(--red, #e74c3c)",
+              color:"var(--red, #e74c3c)",
+            }}>
+              Delete ({selected.size})
+            </button>
+          </div>
+        )}
+
         {myListings.length === 0 ? (
           <Card>
             <div className="muted" style={{ textAlign:"center" }}>
@@ -167,11 +286,35 @@ export default function Profile({ me, notify, refreshMe }){
         ) : (
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
             {myListings.map(l => (
-              <Link key={l.id} to={`/listing/${l.id}`} style={{ textDecoration:"none", color:"inherit" }}>
+              <div key={l.id}
+                onClick={() => {
+                  if (selectMode) {
+                    setSelected(prev => {
+                      const next = new Set(prev);
+                      next.has(l.id) ? next.delete(l.id) : next.add(l.id);
+                      return next;
+                    });
+                  } else {
+                    nav(`/listing/${l.id}`);
+                  }
+                }}
+                style={{ textDecoration:"none", color:"inherit", cursor:"pointer" }}
+              >
                 <div className="panel" style={{
                   display:"flex", gap:12, padding:12, alignItems:"center",
                   borderRadius:14,
+                  border: selected.has(l.id) ? "2px solid var(--cyan)" : "1px solid var(--border)",
                 }}>
+                  {selectMode && (
+                    <div style={{
+                      width:22, height:22, borderRadius:6, flexShrink:0,
+                      border: selected.has(l.id) ? "none" : "2px solid var(--border)",
+                      background: selected.has(l.id) ? "var(--cyan)" : "transparent",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                    }}>
+                      {selected.has(l.id) && <span style={{ color:"#000", fontSize:14, fontWeight:800 }}>{"\u2713"}</span>}
+                    </div>
+                  )}
                   <div style={{
                     width:52, height:52, borderRadius:10, overflow:"hidden",
                     flexShrink:0, background:"var(--panel2)",
@@ -193,7 +336,7 @@ export default function Profile({ me, notify, refreshMe }){
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
