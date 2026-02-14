@@ -12,6 +12,7 @@ from .offers import offers_bp
 from .saved_searches import saved_searches_bp
 from .users import users_bp
 from .reviews import reviews_bp
+from .support import support_bp
 
 def register_blueprints(app):
     init_oauth(app)
@@ -29,3 +30,4 @@ def register_blueprints(app):
     app.register_blueprint(saved_searches_bp, url_prefix="/api/saved-searches")
     app.register_blueprint(users_bp, url_prefix="/api/users")
     app.register_blueprint(reviews_bp, url_prefix="/api/reviews")
+    app.register_blueprint(support_bp, url_prefix="/api/support")

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TopBar from "../components/TopBar.jsx";
 import Card from "../components/Card.jsx";
 import Button from "../components/Button.jsx";
+import { api } from "../api.js";
 
 const FAQ = [
   { q: "How do I post a listing?", a: "Tap the + button in the bottom nav to create a new listing. Add a title, price, photos, and details about your item." },
@@ -23,14 +24,14 @@ export default function Support({ me, notify }){
 
   const supportEmail = "pocketmarket.help@gmail.com";
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!form.message.trim()) { notify("Please enter a message"); return; }
-    const subject = encodeURIComponent(form.type === "report" ? "Report Issue" : "Support Request");
-    const body = encodeURIComponent(`From: ${form.email}\n\n${form.message}`);
-    window.open(`mailto:${supportEmail}?subject=${subject}&body=${body}`, "_self");
-    setSent(true);
-    notify("Opening your email app...");
+    try {
+      await api.supportContact({ email: form.email, message: form.message, type: form.type });
+      setSent(true);
+      notify("Message sent! We'll get back to you soon.");
+    } catch(err) { notify(err.message); }
   };
 
   return (

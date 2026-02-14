@@ -675,9 +675,6 @@ export default function Listing({ me, notify }){
                   if (!reportReason) { notify("Select a reason"); return; }
                   try {
                     await api.reportUser(listing.user_id, { listing_id: listing.id, reason: reportReason });
-                    const subject = encodeURIComponent(`Report: ${reportReason} — Listing #${listing.id}`);
-                    const body = encodeURIComponent(`Reported Listing: ${listing.title}\nListing ID: ${listing.id}\nSeller: ${listing.seller_name}\nReason: ${reportReason}\nURL: ${window.location.href}`);
-                    window.open(`mailto:pocketmarket.help@gmail.com?subject=${subject}&body=${body}`, "_self");
                     setShowReport(false);
                     setReportReason("");
                     notify("Report submitted. We'll review it shortly.");

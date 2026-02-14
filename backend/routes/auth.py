@@ -7,6 +7,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 from extensions import db
 from models import User
+from email_utils import send_welcome
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -55,6 +56,7 @@ def signup():
     db.session.commit()
 
     login_user(u)
+    send_welcome(u.email, u.display_name)
     return jsonify({"ok": True, "user": {"id": u.id, "email": u.email, "display_name": u.display_name}}), 201
 
 @auth_bp.post("/login")

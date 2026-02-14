@@ -110,4 +110,6 @@ export const api = {
 
   createMeetupToken: (listingId) => req(`/api/listings/${listingId}/meetup-token`, { method:"POST" }),
   confirmMeetup: (token) => req(`/api/listings/meetup-confirm/${token}`, { method:"POST" }),
+
+  supportContact: (payload) => req("/api/support/contact", { method:"POST", body: payload }),
 };

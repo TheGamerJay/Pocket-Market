@@ -5,7 +5,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 
 from config import Config
-from extensions import db, migrate, login_manager
+from extensions import db, migrate, login_manager, mail
 from models import User
 from routes import register_blueprints
 
@@ -37,6 +37,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    mail.init_app(app)
 
     with app.app_context():
         db.create_all()
