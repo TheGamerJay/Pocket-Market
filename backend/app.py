@@ -81,6 +81,15 @@ def create_app():
     def health():
         return jsonify({"ok": True}), 200
 
+    @app.post("/api/test-email")
+    def test_email():
+        from flask_login import current_user as cu
+        if not cu.is_authenticated:
+            return jsonify({"error": "Login required"}), 401
+        from email_utils import send_welcome
+        send_welcome(cu.email, cu.display_name)
+        return jsonify({"ok": True, "sent_to": cu.email}), 200
+
     # ── Serve the React frontend ──
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
