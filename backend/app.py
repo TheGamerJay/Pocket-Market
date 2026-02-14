@@ -88,8 +88,14 @@ def create_app():
             from flask_login import current_user as cu
             if not cu.is_authenticated:
                 return jsonify({"error": "Login required"}), 401
-            from email_utils import send_welcome
-            send_welcome(cu.email, cu.display_name)
+            from flask_mail import Message as MailMsg
+            from extensions import mail as m
+            msg = MailMsg(
+                subject="Pocket Market Test Email",
+                recipients=[cu.email],
+                html=f"<p>This is a test email for <b>{cu.display_name or cu.email}</b>. If you see this, email is working!</p>",
+            )
+            m.send(msg)  # synchronous — will throw on SMTP failure
             return jsonify({"ok": True, "sent_to": cu.email}), 200
         except Exception as e:
             return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
