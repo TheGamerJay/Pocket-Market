@@ -38,6 +38,17 @@ class Config:
     # Cron auth
     CRON_SECRET = os.getenv("CRON_SECRET", "dev-secret-change-me")
 
+    # Redis (Railway provides REDIS_URL)
+    REDIS_URL = os.getenv("REDIS_URL", "")
+    SESSION_TYPE = "redis" if os.getenv("REDIS_URL") else "filesystem"
+    SESSION_PERMANENT = True
+    SESSION_USE_SIGNER = True
+    SESSION_KEY_PREFIX = "pm:"
+    PERMANENT_SESSION_LIFETIME = 60 * 60 * 24 * 30  # 30 days
+
+    # Sentry
+    SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+
     # Stripe
     STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
     STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")

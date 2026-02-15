@@ -11,6 +11,12 @@ from routes import register_blueprints
 
 load_dotenv()
 
+# Sentry error tracking (init early to catch everything)
+_sentry_dsn = os.getenv("SENTRY_DSN", "")
+if _sentry_dsn:
+    import sentry_sdk
+    sentry_sdk.init(dsn=_sentry_dsn, traces_sample_rate=0.1, profiles_sample_rate=0.1)
+
 STATIC_FOLDER = os.path.join(os.path.dirname(__file__), "static_frontend")
 
 def create_app():
@@ -38,6 +44,14 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
     limiter.init_app(app)
+
+    # Server-side sessions (Redis when available, filesystem fallback)
+    redis_url = app.config.get("REDIS_URL")
+    if redis_url:
+        import redis
+        app.config["SESSION_REDIS"] = redis.from_url(redis_url)
+    from flask_session import Session
+    Session(app)
 
     with app.app_context():
         db.create_all()

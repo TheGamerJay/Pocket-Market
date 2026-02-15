@@ -27,6 +27,7 @@ import Contact from "./pages/Contact.jsx";
 import SellerProfile from "./pages/SellerProfile.jsx";
 import Footer from "./components/Footer.jsx";
 import AdFooter from "./components/AdFooter.jsx";
+import CookieConsent from "./components/CookieConsent.jsx";
 import Purchases from "./pages/Purchases.jsx";
 import Onboarding from "./components/Onboarding.jsx";
 import MeetupConfirm from "./pages/MeetupConfirm.jsx";
@@ -130,6 +131,12 @@ export default function App(){
   };
 
   const loc = useLocation();
+
+  // Google Analytics page view tracking
+  useEffect(() => {
+    if (window.gtag) window.gtag("event", "page_view", { page_path: loc.pathname });
+  }, [loc.pathname]);
+
   const authPages = ["/login", "/signup", "/forgot", "/reset", "/verify"];
   const publicPages = ["/about", "/privacy", "/terms", "/contact"];
   const hideNav = authPages.includes(loc.pathname);
@@ -233,6 +240,7 @@ export default function App(){
 
       {!hideNav && <BottomNav unreadChats={unreadChats} />}
       <Toast text={toast} />
+      <CookieConsent />
       {me.authed && me.user && !me.user.onboarding_done && (
         <Onboarding me={me} refreshMe={refreshMe} notify={notify} />
       )}
