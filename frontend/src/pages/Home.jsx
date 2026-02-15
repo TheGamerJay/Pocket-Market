@@ -322,12 +322,12 @@ function RecentlyViewed(){
       </div>
       <div style={{ display:"flex", gap:10, overflowX:"auto", paddingBottom:4 }}>
         {items.map(l => (
-          <Link key={l.id} to={`/listing/${l.id}`} style={{ minWidth:120, flexShrink:0 }}>
+          <Link key={l.id} to={`/listing/${l.id}`} style={{ minWidth:100, maxWidth:100, flexShrink:0 }}>
             <Card noPadding>
               {l.image ? (
-                <img src={`${api.base}${l.image}`} alt={l.title} className="card-image" onError={e => { e.target.onerror=null; e.target.src=""; e.target.className="card-image-placeholder"; }} />
+                <img src={`${api.base}${l.image}`} alt={l.title} style={{ width:"100%", height:80, objectFit:"cover", borderRadius:"var(--radius) var(--radius) 0 0", display:"block" }} onError={e => { e.target.onerror=null; e.target.src=""; e.target.style.background="var(--panel2)"; }} />
               ) : (
-                <div className="card-image-placeholder"><IconCamera size={24} /></div>
+                <div style={{ width:"100%", height:80, background:"var(--panel2)", borderRadius:"var(--radius) var(--radius) 0 0", display:"flex", alignItems:"center", justifyContent:"center" }}><IconCamera size={20} /></div>
               )}
               <div style={{ padding:"6px 8px" }}>
                 <div style={{ fontWeight:700, fontSize:11, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>

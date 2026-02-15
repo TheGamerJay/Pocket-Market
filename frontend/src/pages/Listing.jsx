@@ -261,7 +261,7 @@ export default function Listing({ me, notify }){
             <img src={`${api.base}${images[imgIdx]}`} alt={listing.title}
                  onClick={() => setGalleryOpen(true)}
                  onError={e => { e.target.onerror=null; e.target.style.objectFit="contain"; e.target.style.background="var(--panel2)"; e.target.src=""; }}
-                 style={{ width:"100%", height:280, objectFit:"cover", display:"block", cursor:"pointer" }} />
+                 style={{ width:"100%", height:240, objectFit:"cover", display:"block", cursor:"pointer" }} />
 
             {/* Nav arrows */}
             {images.length > 1 && (
