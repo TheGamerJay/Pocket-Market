@@ -101,6 +101,21 @@ def boost_status():
     }), 200
 
 
+@boosts_bp.get("/rules")
+def boost_rules():
+    """Return boost rules for display in the UI."""
+    return jsonify({
+        "rules": [
+            "Only 1 active boost per listing at a time (free or paid).",
+            "Pro members get 1 free 24-hour boost every day.",
+            "Free boosts reset at midnight UTC — use it or lose it.",
+            "Free boosts cannot stack or extend an existing boost.",
+            "All users can purchase paid boosts (24h, 3-day, or 7-day).",
+            "Boosted listings appear in the Featured section on the home page.",
+        ]
+    }), 200
+
+
 @boosts_bp.post("/activate")
 @login_required
 def activate_boost():
@@ -125,7 +140,7 @@ def activate_boost():
         Boost.ends_at > now,
     ).first()
     if existing:
-        return jsonify({"error": "Already boosted"}), 400
+        return jsonify({"error": "This listing already has an active boost"}), 409
 
     if use_free:
         # Validate Pro free boost
