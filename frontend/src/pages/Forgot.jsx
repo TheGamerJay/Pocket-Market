@@ -35,12 +35,8 @@ export default function Forgot({ notify }){
             <div style={{ fontSize:48, marginBottom:12 }}>&#9993;</div>
             <div style={{ fontWeight:700, fontSize:16 }}>Check your email</div>
             <div className="muted" style={{ fontSize:14, marginTop:8, lineHeight:1.5 }}>
-              We sent a password reset link to <strong>{email}</strong>. Check your inbox and follow the link to reset your password.
+              We sent a password reset link to <strong>{email}</strong>. Click the link in the email to set a new password.
             </div>
-          </div>
-
-          <div style={{ marginTop:20 }}>
-            <Link to="/reset"><Button>I Have a Reset Code</Button></Link>
           </div>
         </>
       ) : (

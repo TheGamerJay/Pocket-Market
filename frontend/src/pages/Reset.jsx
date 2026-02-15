@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import AuthHeader from "../components/AuthHeader.jsx";
 import Input from "../components/Input.jsx";
 import Button from "../components/Button.jsx";
@@ -8,16 +8,19 @@ import { api } from "../api.js";
 
 export default function Reset({ notify }){
   const [params] = useSearchParams();
-  const [token, setToken] = useState(params.get("token") || "");
+  const token = params.get("token") || "";
   const [new_password, setPw] = useState("");
   const [busy, setBusy] = useState(false);
+  const nav = useNavigate();
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (!token) { notify("Invalid reset link. Please request a new one."); return; }
     setBusy(true);
     try{
       await api.reset({ token, new_password });
-      notify("Password updated. Go login.");
+      notify("Password updated!");
+      nav("/login");
     }catch(err){
       notify(err.message);
     }finally{
@@ -27,15 +30,26 @@ export default function Reset({ notify }){
 
   return (
     <>
-      <AuthHeader title="Reset Password" />
+      <AuthHeader title="Set New Password" />
 
-      <form onSubmit={onSubmit} style={{ display:"flex", flexDirection:"column", gap:12 }}>
-        {!params.get("token") && (
-          <Input icon={<IconLock size={18} />} placeholder="Reset token" value={token} onChange={e => setToken(e.target.value)} />
-        )}
-        <Input icon={<IconLock size={18} />} placeholder="New password" type="password" value={new_password} onChange={e => setPw(e.target.value)} />
-        <Button disabled={busy}>{busy ? "Updating..." : "Update Password"}</Button>
-      </form>
+      {!token ? (
+        <div style={{ textAlign:"center", marginTop:10 }}>
+          <div className="muted" style={{ fontSize:14, lineHeight:1.5 }}>
+            This link is invalid or expired. Please request a new reset link.
+          </div>
+          <div style={{ marginTop:16 }}>
+            <Link to="/forgot"><Button>Request Reset Link</Button></Link>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <div className="muted" style={{ textAlign:"center", fontSize:14, marginBottom:4, lineHeight:1.5 }}>
+            Enter your new password below.
+          </div>
+          <Input icon={<IconLock size={18} />} placeholder="New password" type="password" value={new_password} onChange={e => setPw(e.target.value)} />
+          <Button disabled={busy}>{busy ? "Updating..." : "Set New Password"}</Button>
+        </form>
+      )}
 
       <div className="muted" style={{ textAlign:"center", fontSize:13, marginTop:18 }}>
         Remember your password?{" "}
