@@ -1,4 +1,9 @@
-import os, re, sys, logging, traceback
+import sys
+print(">>> app.py MODULE LOADING <<<", flush=True)
+print(f">>> Python: {sys.version}", flush=True)
+print(f">>> PORT env: {__import__('os').getenv('PORT', 'NOT SET')}", flush=True)
+
+import os, re, logging, traceback
 from flask import Flask, jsonify, send_from_directory, request, make_response
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
