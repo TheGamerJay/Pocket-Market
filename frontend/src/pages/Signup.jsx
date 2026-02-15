@@ -11,6 +11,7 @@ export default function Signup({ notify }){
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [busy, setBusy] = useState(false);
   const nav = useNavigate();
 
@@ -59,13 +60,21 @@ export default function Signup({ notify }){
           }
         />
 
-        <div className="muted" style={{ fontSize:12, textAlign:"center", lineHeight:1.5 }}>
-          By signing up, you agree to our{" "}
-          <Link to="/terms" style={{ color:"var(--cyan)", textDecoration:"underline" }}>Terms of Service</Link> and{" "}
-          <Link to="/privacy" style={{ color:"var(--cyan)", textDecoration:"underline" }}>Privacy Policy</Link>.
-        </div>
+        <label style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer", padding:"4px 0" }}>
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={e => setAgreed(e.target.checked)}
+            style={{ marginTop:3, accentColor:"var(--cyan)", width:18, height:18, flexShrink:0 }}
+          />
+          <span className="muted" style={{ fontSize:12, lineHeight:1.5 }}>
+            I am at least 18 years old and agree to the{" "}
+            <Link to="/terms" onClick={e => e.stopPropagation()} style={{ color:"var(--cyan)", textDecoration:"underline" }}>Terms of Service</Link> and{" "}
+            <Link to="/privacy" onClick={e => e.stopPropagation()} style={{ color:"var(--cyan)", textDecoration:"underline" }}>Privacy Policy</Link>.
+          </span>
+        </label>
 
-        <Button disabled={busy}>{busy ? "Creating..." : "Create Account"}</Button>
+        <Button disabled={busy || !agreed}>{busy ? "Creating..." : "Create Account"}</Button>
       </form>
 
       <div className="muted" style={{ textAlign:"center", fontSize:13, marginTop:18 }}>
