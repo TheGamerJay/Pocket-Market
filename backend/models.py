@@ -144,6 +144,7 @@ class Boost(db.Model):
     ends_at = db.Column(db.DateTime(timezone=True), nullable=False)
     status = db.Column(db.String(32), nullable=False)  # "active"|"expired"|"canceled"
 
+    duration_hours = db.Column(db.Integer, nullable=False, default=24)
     paid_cents = db.Column(db.Integer, nullable=False)
     boost_type = db.Column(db.String(16), nullable=False, default="paid")  # "paid"|"free_pro"
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)

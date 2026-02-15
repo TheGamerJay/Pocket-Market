@@ -82,8 +82,19 @@ def create_app():
         changed |= _add_col("listings", "nudged_at", "TIMESTAMP WITH TIME ZONE")
         changed |= _add_col("users", "pro_free_boost_last_used_day", "VARCHAR(10)")
         changed |= _add_col("boosts", "boost_type", "VARCHAR(16) DEFAULT 'paid'")
+        changed |= _add_col("boosts", "duration_hours", "INTEGER DEFAULT 24")
         if changed:
             db.session.commit()
+
+        # Partial unique index: only 1 active boost per listing at the DB level
+        try:
+            db.session.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_one_active_boost_per_listing "
+                "ON boosts (listing_id) WHERE status = 'active'"
+            ))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
     @login_manager.user_loader
     def load_user(user_id):

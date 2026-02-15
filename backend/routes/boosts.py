@@ -42,6 +42,14 @@ def _seconds_until_reset():
 def featured():
     global _rotation_offset
     now = datetime.utcnow()
+
+    # Auto-expire stale boosts
+    expired_count = Boost.query.filter(
+        Boost.status == "active", Boost.ends_at <= now,
+    ).update({"status": "expired"})
+    if expired_count:
+        db.session.commit()
+
     active = Boost.query.filter(Boost.status == "active", Boost.ends_at > now).order_by(Boost.created_at.asc()).all()
     if not active:
         return jsonify({"featured_listing_ids": []}), 200
@@ -134,6 +142,15 @@ def activate_boost():
         return jsonify({"error": "Forbidden"}), 403
 
     now = datetime.utcnow()
+
+    # Auto-expire stale boosts so partial unique index stays clean
+    Boost.query.filter(
+        Boost.listing_id == listing_id,
+        Boost.status == "active",
+        Boost.ends_at <= now,
+    ).update({"status": "expired"})
+
+    # Check for truly active boost
     existing = Boost.query.filter(
         Boost.listing_id == listing_id,
         Boost.status == "active",
@@ -152,44 +169,37 @@ def activate_boost():
                 "error": "Free boost already used today",
                 "countdown_seconds": secs,
             }), 429
-
-        # Create free boost (always 24h for free)
-        boost = Boost(
-            listing_id=listing_id,
-            starts_at=now,
-            ends_at=now + timedelta(hours=24),
-            status="active",
-            paid_cents=0,
-            boost_type="free_pro",
-        )
-        db.session.add(boost)
-
-        # Mark free boost as used today
-        current_user.pro_free_boost_last_used_day = _utc_today_str()
-        db.session.commit()
-
-        return jsonify({"ok": True, "boost": {
-            "id": boost.id,
-            "ends_at": boost.ends_at.isoformat(),
-            "hours": 24,
-            "boost_type": "free_pro",
-        }}), 201
+        actual_hours = 24
+        paid = 0
+        btype = "free_pro"
     else:
-        # Paid boost
-        boost = Boost(
-            listing_id=listing_id,
-            starts_at=now,
-            ends_at=now + timedelta(hours=hours),
-            status="active",
-            paid_cents=DURATIONS_MAP[hours],
-            boost_type="paid",
-        )
-        db.session.add(boost)
-        db.session.commit()
+        actual_hours = hours
+        paid = DURATIONS_MAP[hours]
+        btype = "paid"
 
-        return jsonify({"ok": True, "boost": {
-            "id": boost.id,
-            "ends_at": boost.ends_at.isoformat(),
-            "hours": hours,
-            "boost_type": "paid",
-        }}), 201
+    boost = Boost(
+        listing_id=listing_id,
+        starts_at=now,
+        ends_at=now + timedelta(hours=actual_hours),
+        duration_hours=actual_hours,
+        status="active",
+        paid_cents=paid,
+        boost_type=btype,
+    )
+    db.session.add(boost)
+
+    if use_free:
+        current_user.pro_free_boost_last_used_day = _utc_today_str()
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({"error": "This listing already has an active boost"}), 409
+
+    return jsonify({"ok": True, "boost": {
+        "id": boost.id,
+        "ends_at": boost.ends_at.isoformat(),
+        "hours": actual_hours,
+        "boost_type": btype,
+    }}), 201
