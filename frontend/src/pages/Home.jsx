@@ -178,7 +178,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
                 <Card noPadding>
                   <div style={{ position:"relative" }}>
                     {l.images?.length > 0 ? (
-                      <img src={`${api.base}${l.images[0]}`} alt={l.title} className="card-image" />
+                      <img src={`${api.base}${l.images[0]}`} alt={l.title} className="card-image" onError={e => { e.target.onerror=null; e.target.src=""; e.target.className="card-image-placeholder"; }} />
                     ) : (
                       <div className="card-image-placeholder"><IconCamera size={28} /></div>
                     )}
@@ -243,7 +243,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
               <Card noPadding>
                 <div style={{ position:"relative" }}>
                   {l.images?.length > 0 ? (
-                    <img src={`${api.base}${l.images[0]}`} alt={l.title} className="card-image" />
+                    <img src={`${api.base}${l.images[0]}`} alt={l.title} className="card-image" onError={e => { e.target.onerror=null; e.target.src=""; e.target.className="card-image-placeholder"; }} />
                   ) : (
                     <div className="card-image-placeholder"><IconCamera size={28} /></div>
                   )}
@@ -322,7 +322,7 @@ function RecentlyViewed(){
           <Link key={l.id} to={`/listing/${l.id}`} style={{ minWidth:120, flexShrink:0 }}>
             <Card noPadding>
               {l.image ? (
-                <img src={`${api.base}${l.image}`} alt={l.title} className="card-image" />
+                <img src={`${api.base}${l.image}`} alt={l.title} className="card-image" onError={e => { e.target.onerror=null; e.target.src=""; e.target.className="card-image-placeholder"; }} />
               ) : (
                 <div className="card-image-placeholder"><IconCamera size={24} /></div>
               )}

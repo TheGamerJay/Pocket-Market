@@ -260,6 +260,7 @@ export default function Listing({ me, notify }){
           <>
             <img src={`${api.base}${images[imgIdx]}`} alt={listing.title}
                  onClick={() => setGalleryOpen(true)}
+                 onError={e => { e.target.onerror=null; e.target.style.objectFit="contain"; e.target.style.background="var(--panel2)"; e.target.src=""; }}
                  style={{ width:"100%", height:280, objectFit:"cover", display:"block", cursor:"pointer" }} />
 
             {/* Nav arrows */}
@@ -857,7 +858,7 @@ export default function Listing({ me, notify }){
                 <Card noPadding>
                   <div style={{ position:"relative" }}>
                     {s.image ? (
-                      <img src={`${api.base}${s.image}`} alt={s.title} className="card-image" />
+                      <img src={`${api.base}${s.image}`} alt={s.title} className="card-image" onError={e => { e.target.onerror=null; e.target.src=""; e.target.className="card-image-placeholder"; }} />
                     ) : (
                       <div className="card-image-placeholder"><IconCamera size={28} /></div>
                     )}

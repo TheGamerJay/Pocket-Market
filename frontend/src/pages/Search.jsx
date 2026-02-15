@@ -118,7 +118,7 @@ export default function Search({ notify }){
                 <Card noPadding>
                   <div style={{ position:"relative" }}>
                     {l.images?.length > 0 ? (
-                      <img src={`${api.base}${l.images[0]}`} alt={l.title} className="card-image" />
+                      <img src={`${api.base}${l.images[0]}`} alt={l.title} className="card-image" onError={e => { e.target.onerror=null; e.target.src=""; e.target.className="card-image-placeholder"; }} />
                     ) : (
                       <div className="card-image-placeholder"><IconCamera size={28} /></div>
                     )}

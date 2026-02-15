@@ -6,7 +6,11 @@ from flask_login import login_required, current_user
 
 from sqlalchemy import func
 from extensions import db
-from models import Listing, ListingImage, SafeMeetLocation, Boost, Observing, Notification, User, PriceHistory, ListingView
+from models import (
+    Listing, ListingImage, SafeMeetLocation, Boost, BoostImpression,
+    Observing, Notification, User, PriceHistory, ListingView,
+    Conversation, Message, SafetyAckEvent, Offer, Report, Review, MeetupConfirmation,
+)
 
 listings_bp = Blueprint("listings", __name__)
 
@@ -382,8 +386,34 @@ def delete_listing(listing_id):
     if l.user_id != current_user.id:
         return jsonify({"error": "Forbidden"}), 403
 
-    ListingImage.query.filter_by(listing_id=l.id).delete()
-    SafeMeetLocation.query.filter_by(listing_id=l.id).delete()
+    lid = l.id
+
+    # Delete all dependent records (order matters for FK chains)
+    # BoostImpressions → Boosts
+    boost_ids = [b.id for b in Boost.query.filter_by(listing_id=lid).all()]
+    if boost_ids:
+        BoostImpression.query.filter(BoostImpression.boost_id.in_(boost_ids)).delete(synchronize_session=False)
+    Boost.query.filter_by(listing_id=lid).delete()
+
+    # Messages → Conversations
+    conv_ids = [c.id for c in Conversation.query.filter_by(listing_id=lid).all()]
+    if conv_ids:
+        Message.query.filter(Message.conversation_id.in_(conv_ids)).delete(synchronize_session=False)
+    Conversation.query.filter_by(listing_id=lid).delete()
+
+    # All other direct FK references
+    ListingImage.query.filter_by(listing_id=lid).delete()
+    SafeMeetLocation.query.filter_by(listing_id=lid).delete()
+    SafetyAckEvent.query.filter_by(listing_id=lid).delete()
+    Observing.query.filter_by(listing_id=lid).delete()
+    Notification.query.filter_by(listing_id=lid).delete()
+    Offer.query.filter_by(listing_id=lid).delete()
+    PriceHistory.query.filter_by(listing_id=lid).delete()
+    Review.query.filter_by(listing_id=lid).delete()
+    Report.query.filter_by(listing_id=lid).delete()
+    ListingView.query.filter_by(listing_id=lid).delete()
+    MeetupConfirmation.query.filter_by(listing_id=lid).delete()
+
     db.session.delete(l)
     db.session.commit()
     return jsonify({"ok": True}), 200

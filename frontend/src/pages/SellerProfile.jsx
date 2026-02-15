@@ -218,7 +218,7 @@ export default function SellerProfile({ me, notify }){
                 <Card noPadding>
                   <div style={{ position:"relative" }}>
                     {l.image ? (
-                      <img src={`${api.base}${l.image}`} alt={l.title} className="card-image" />
+                      <img src={`${api.base}${l.image}`} alt={l.title} className="card-image" onError={e => { e.target.onerror=null; e.target.src=""; e.target.className="card-image-placeholder"; }} />
                     ) : (
                       <div className="card-image-placeholder"><IconCamera size={28} /></div>
                     )}
