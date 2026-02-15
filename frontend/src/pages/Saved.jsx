@@ -43,6 +43,16 @@ export default function Saved({ notify }){
     })();
   }, []);
 
+  const removeItem = async (e, listingId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await api.toggleObserving(listingId);
+      setItems(prev => prev.filter(l => l.id !== listingId));
+      notify("Removed from Saved.");
+    } catch(err) { notify(err.message); }
+  };
+
   const removeSearch = async (id) => {
     try {
       await api.deleteSavedSearch(id);
@@ -107,7 +117,17 @@ export default function Saved({ notify }){
                   )}
                 </div>
               </div>
-              <IconChevronRight size={18} color="var(--muted)" />
+              <button
+                onClick={(e) => removeItem(e, l.id)}
+                style={{
+                  background:"none", border:"1px solid var(--red, #e74c3c)",
+                  borderRadius:8, padding:"6px 10px", cursor:"pointer",
+                  fontSize:11, fontWeight:700, color:"var(--red, #e74c3c)",
+                  fontFamily:"inherit", flexShrink:0,
+                }}
+              >
+                Remove
+              </button>
             </div>
           </Link>
         )) : (
