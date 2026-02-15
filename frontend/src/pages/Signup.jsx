@@ -68,7 +68,7 @@ export default function Signup({ notify }){
             style={{ marginTop:3, accentColor:"var(--cyan)", width:18, height:18, flexShrink:0 }}
           />
           <span className="muted" style={{ fontSize:12, lineHeight:1.5 }}>
-            I am at least 18 years old and agree to the{" "}
+            I confirm that I am at least 18 years old and agree to the{" "}
             <Link to="/terms" onClick={e => e.stopPropagation()} style={{ color:"var(--cyan)", textDecoration:"underline" }}>Terms of Service</Link> and{" "}
             <Link to="/privacy" onClick={e => e.stopPropagation()} style={{ color:"var(--cyan)", textDecoration:"underline" }}>Privacy Policy</Link>.
           </span>
@@ -80,6 +80,22 @@ export default function Signup({ notify }){
       <div className="muted" style={{ textAlign:"center", fontSize:13, marginTop:18 }}>
         Already have an account?{" "}
         <Link to="/login" style={{ color:"var(--cyan)", fontWeight:700 }}>Log In</Link>
+      </div>
+
+      <div style={{
+        textAlign:"center", padding:"20px 0 16px",
+        fontSize:11, color:"var(--muted)", lineHeight:1.8,
+      }}>
+        <div style={{ display:"flex", justifyContent:"center", gap:6, flexWrap:"wrap" }}>
+          <Link to="/about" style={{ color:"var(--muted)", textDecoration:"none", fontWeight:600 }}>About</Link>
+          <span>&middot;</span>
+          <Link to="/privacy" style={{ color:"var(--muted)", textDecoration:"none", fontWeight:600 }}>Privacy</Link>
+          <span>&middot;</span>
+          <Link to="/terms" style={{ color:"var(--muted)", textDecoration:"none", fontWeight:600 }}>Terms</Link>
+          <span>&middot;</span>
+          <Link to="/contact" style={{ color:"var(--muted)", textDecoration:"none", fontWeight:600 }}>Contact</Link>
+        </div>
+        <div style={{ marginTop:4 }}>&copy; {new Date().getFullYear()} Pocket Market</div>
       </div>
     </>
   );
