@@ -103,11 +103,11 @@ export default function Listing({ me, notify }){
   const goBack = () => window.history.length > 1 ? nav(-1) : nav("/");
 
   const toggleObs = async () => {
-    if (!me.authed) { notify("Login to use Observing."); nav("/login"); return; }
+    if (!me.authed) { notify("Login to save listings."); nav("/login"); return; }
     try{
       const r = await api.toggleObserving(id);
       setObserving(r.observing);
-      notify(r.observing ? "Added to Observing." : "Removed from Observing.");
+      notify(r.observing ? "Saved." : "Removed from Saved.");
     }catch(err){ notify(err.message); }
   };
 
@@ -388,7 +388,7 @@ export default function Listing({ me, notify }){
         </span>
       </div>
 
-      {/* ── Social proof: views + observing ── */}
+      {/* ── Social proof: views + saves ── */}
       <div style={{ display:"flex", alignItems:"center", gap:14, marginTop:8, flexWrap:"wrap" }}>
         {listing.view_count > 0 && (
           <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"var(--muted)" }}>
@@ -401,7 +401,7 @@ export default function Listing({ me, notify }){
             color:"var(--cyan)", padding:"3px 10px", borderRadius:8,
             background:"rgba(62,224,255,.08)", border:"1px solid rgba(62,224,255,.18)",
           }}>
-            {"\ud83d\udc41\ufe0f"} {listing.observing_count} watching
+            {"\ud83d\udc41\ufe0f"} {listing.observing_count} saved
           </div>
         )}
       </div>
@@ -611,7 +611,7 @@ export default function Listing({ me, notify }){
         ) : (
           <>
             <Button icon={<IconEye size={18} />} onClick={toggleObs}>
-              {observing ? "Observing" : "Observe"}
+              {observing ? "Saved" : "Save"}
             </Button>
 
             {/* Make an Offer */}

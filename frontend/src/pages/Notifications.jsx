@@ -37,7 +37,7 @@ export default function Notifications({ notify }){
       {busy ? (
         <Card><div className="muted">Loading...</div></Card>
       ) : rows.length === 0 ? (
-        <Card><div className="muted" style={{ textAlign:"center" }}>No notifications yet. Observe items to get updates when prices drop.</div></Card>
+        <Card><div className="muted" style={{ textAlign:"center" }}>No notifications yet. Save items to get updates when prices drop.</div></Card>
       ) : (
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
           {rows.map(n => (

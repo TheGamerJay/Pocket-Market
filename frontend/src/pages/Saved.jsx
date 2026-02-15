@@ -103,7 +103,7 @@ export default function Saved({ notify }){
                   <span style={{ fontWeight:800, fontSize:13 }}>{money(l.price_cents)}</span>
                   {l.is_sold && <span style={{ fontSize:10, color:"var(--red, #e74c3c)", fontWeight:700 }}>SOLD</span>}
                   {l.observing_count > 0 && !l.is_sold && (
-                    <span className="muted" style={{ fontSize:10 }}>{l.observing_count} watching</span>
+                    <span className="muted" style={{ fontSize:10 }}>{l.observing_count} saved</span>
                   )}
                 </div>
               </div>
@@ -113,7 +113,7 @@ export default function Saved({ notify }){
         )) : (
           <Card>
             <div className="muted" style={{ textAlign:"center" }}>
-              No saved items yet. Tap the eye icon on any listing to start observing it.
+              No saved items yet. Tap the eye icon on any listing to save it.
             </div>
           </Card>
         )

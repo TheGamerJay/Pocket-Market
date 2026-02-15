@@ -26,7 +26,7 @@ export default function Observing({ notify }){
 
   return (
     <>
-      <TopBar title="Observing" onBack={() => nav(-1)} centerTitle />
+      <TopBar title="Saved Items" onBack={() => nav(-1)} centerTitle />
       <div style={{ height:12 }} />
 
       {busy ? (
@@ -48,7 +48,7 @@ export default function Observing({ notify }){
               <div style={{ fontWeight:700, fontSize:15 }}>{l.title}</div>
               <div className="muted" style={{ fontSize:13, marginTop:2 }}>
                 {l.observing_count > 0
-                  ? <span style={{ color:"var(--cyan)" }}>{l.observing_count} people observing</span>
+                  ? <span style={{ color:"var(--cyan)" }}>{l.observing_count} people saved this</span>
                   : (l.city || l.category || "Nearby")
                 }
               </div>
@@ -57,7 +57,7 @@ export default function Observing({ notify }){
           </div>
         </Link>
       )) : (
-        <Card><div className="muted">Nothing in Observing yet.</div></Card>
+        <Card><div className="muted">No saved items yet.</div></Card>
       )}
     </>
   );
