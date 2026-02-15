@@ -716,6 +716,10 @@ export default function Listing({ me, notify }){
                 if (!window.confirm("Delete this listing? This can't be undone.")) return;
                 try {
                   await api.deleteListing(listing.id);
+                  try {
+                    const recent = JSON.parse(localStorage.getItem("pm_recent") || "[]");
+                    localStorage.setItem("pm_recent", JSON.stringify(recent.filter(r => r.id !== listing.id)));
+                  } catch {}
                   notify("Listing deleted.");
                   nav("/");
                 } catch(err) { notify(err.message); }

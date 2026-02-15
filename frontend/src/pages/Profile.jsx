@@ -283,10 +283,15 @@ export default function Profile({ me, notify, refreshMe }){
             <button onClick={async () => {
               if (!window.confirm(`Delete ${selected.size} listings? This can't be undone.`)) return;
               try {
-                await api.bulkAction({ action:"delete", listing_ids: [...selected] });
+                const deleteIds = [...selected];
+                await api.bulkAction({ action:"delete", listing_ids: deleteIds });
+                try {
+                  const recent = JSON.parse(localStorage.getItem("pm_recent") || "[]");
+                  localStorage.setItem("pm_recent", JSON.stringify(recent.filter(r => !deleteIds.includes(r.id))));
+                } catch {}
                 setMyListings(prev => prev.filter(l => !selected.has(l.id)));
                 setSelected(new Set()); setSelectMode(false);
-                notify(`${selected.size} listings deleted`);
+                notify(`${deleteIds.length} listings deleted`);
               } catch(err) { notify(err.message); }
             }} style={{
               padding:"8px 14px", borderRadius:10, fontSize:12, fontWeight:700,
