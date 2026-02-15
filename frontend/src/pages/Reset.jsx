@@ -10,6 +10,7 @@ export default function Reset({ notify }){
   const [params] = useSearchParams();
   const token = params.get("token") || "";
   const [new_password, setPw] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const nav = useNavigate();
 
@@ -46,7 +47,21 @@ export default function Reset({ notify }){
           <div className="muted" style={{ textAlign:"center", fontSize:14, marginBottom:4, lineHeight:1.5 }}>
             Enter your new password below.
           </div>
-          <Input icon={<IconLock size={18} />} placeholder="New password" type="password" value={new_password} onChange={e => setPw(e.target.value)} />
+          <Input
+            icon={<IconLock size={18} />}
+            placeholder="New password"
+            type={showPw ? "text" : "password"}
+            value={new_password}
+            onChange={e => setPw(e.target.value)}
+            rightAction={
+              <button type="button" onClick={() => setShowPw(p => !p)} style={{
+                background:"none", border:"none", color:"var(--cyan)",
+                cursor:"pointer", fontSize:13, fontWeight:700,
+              }}>
+                {showPw ? "\ud83d\ude48" : "\ud83d\udc41\ufe0f"}
+              </button>
+            }
+          />
           <Button disabled={busy}>{busy ? "Updating..." : "Set New Password"}</Button>
         </form>
       )}
