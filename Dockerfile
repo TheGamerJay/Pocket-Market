@@ -20,4 +20,4 @@ COPY backend/ .
 COPY --from=frontend-build /frontend/dist ./static_frontend
 
 EXPOSE 8080
-CMD gunicorn wsgi:app --bind 0.0.0.0:${PORT:-8080} --access-logfile - --error-logfile - --log-level debug
+CMD gunicorn wsgi:app --bind 0.0.0.0:${PORT:-8080}
