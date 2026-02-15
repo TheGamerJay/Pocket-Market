@@ -67,7 +67,7 @@ export default function Pro({ me, notify, refreshMe }){
       <Card>
         <div style={{ textAlign:"center", padding:"8px 0" }}>
           <div style={{ fontSize:40, fontWeight:900 }}>
-            <span style={{ fontSize:20, verticalAlign:"top", fontWeight:700 }}>$</span>8
+            <span style={{ fontSize:20, verticalAlign:"top", fontWeight:700 }}>$</span>9.99
             <span className="muted" style={{ fontSize:14, fontWeight:500 }}>/month</span>
           </div>
           {isPro && (
@@ -128,7 +128,7 @@ export default function Pro({ me, notify, refreshMe }){
         </Button>
       ) : (
         <Button onClick={handleSubscribe} disabled={loading}>
-          {loading ? "Loading..." : "Subscribe for $8/month"}
+          {loading ? "Loading..." : "Subscribe for $9.99/month"}
         </Button>
       )}
 
