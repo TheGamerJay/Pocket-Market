@@ -1,10 +1,11 @@
 import random
+import stripe
 from datetime import datetime, timedelta
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from flask_login import current_user, login_required
 
 from extensions import db
-from models import Boost, BoostImpression, Listing, User
+from models import Boost, BoostImpression, Listing, Subscription, User
 
 boosts_bp = Blueprint("boosts", __name__)
 
@@ -12,11 +13,12 @@ boosts_bp = Blueprint("boosts", __name__)
 _rotation_offset = 0
 
 DURATIONS = [
-    {"label": "24 Hours", "hours": 24, "price_usd": 3, "price_cents": 300},
-    {"label": "3 Days",   "hours": 72, "price_usd": 7, "price_cents": 700},
-    {"label": "7 Days",   "hours": 168, "price_usd": 12, "price_cents": 1200},
+    {"label": "24 Hours", "hours": 24, "price_usd": 3, "price_cents": 300, "config_key": "BOOST_24H_PRICE_ID"},
+    {"label": "3 Days",   "hours": 72, "price_usd": 7, "price_cents": 700, "config_key": "BOOST_3D_PRICE_ID"},
+    {"label": "7 Days",   "hours": 168, "price_usd": 12, "price_cents": 1200, "config_key": "BOOST_7D_PRICE_ID"},
 ]
 DURATIONS_MAP = {d["hours"]: d["price_cents"] for d in DURATIONS}
+DURATION_CONFIG = {d["hours"]: d["config_key"] for d in DURATIONS}
 
 
 def _utc_today_str():
@@ -127,17 +129,13 @@ def boost_rules():
 @boosts_bp.post("/activate")
 @login_required
 def activate_boost():
+    """Activate a FREE daily Pro boost only. Paid boosts go through /create-checkout."""
     data = request.get_json(force=True)
     listing_id = data.get("listing_id")
-    hours = int(data.get("hours") or 0)
-    use_free = bool(data.get("use_free_boost", False))
 
-    # Boosting requires Pro membership
+    # Only free boosts through this endpoint
     if not current_user.is_pro:
         return jsonify({"error": "Upgrade to Pro to boost listings"}), 403
-
-    if hours not in DURATIONS_MAP:
-        return jsonify({"error": "Invalid duration"}), 400
 
     listing = db.session.get(Listing, listing_id)
     if not listing:
@@ -145,16 +143,22 @@ def activate_boost():
     if listing.user_id != current_user.id:
         return jsonify({"error": "Forbidden"}), 403
 
+    if not _free_boost_available(current_user):
+        secs = _seconds_until_reset()
+        return jsonify({
+            "error": "Free boost already used today",
+            "countdown_seconds": secs,
+        }), 429
+
     now = datetime.utcnow()
 
-    # Auto-expire stale boosts so partial unique index stays clean
+    # Auto-expire stale boosts
     Boost.query.filter(
         Boost.listing_id == listing_id,
         Boost.status == "active",
         Boost.ends_at <= now,
     ).update({"status": "expired"})
 
-    # Check for truly active boost
     existing = Boost.query.filter(
         Boost.listing_id == listing_id,
         Boost.status == "active",
@@ -163,37 +167,17 @@ def activate_boost():
     if existing:
         return jsonify({"error": "This listing already has an active boost"}), 409
 
-    if use_free:
-        # Validate Pro free boost
-        if not current_user.is_pro:
-            return jsonify({"error": "Free boosts are for Pro members only"}), 403
-        if not _free_boost_available(current_user):
-            secs = _seconds_until_reset()
-            return jsonify({
-                "error": "Free boost already used today",
-                "countdown_seconds": secs,
-            }), 429
-        actual_hours = 24
-        paid = 0
-        btype = "free_pro"
-    else:
-        actual_hours = hours
-        paid = DURATIONS_MAP[hours]
-        btype = "paid"
-
     boost = Boost(
         listing_id=listing_id,
         starts_at=now,
-        ends_at=now + timedelta(hours=actual_hours),
-        duration_hours=actual_hours,
+        ends_at=now + timedelta(hours=24),
+        duration_hours=24,
         status="active",
-        paid_cents=paid,
-        boost_type=btype,
+        paid_cents=0,
+        boost_type="free_pro",
     )
     db.session.add(boost)
-
-    if use_free:
-        current_user.pro_free_boost_last_used_day = _utc_today_str()
+    current_user.pro_free_boost_last_used_day = _utc_today_str()
 
     try:
         db.session.commit()
@@ -204,6 +188,78 @@ def activate_boost():
     return jsonify({"ok": True, "boost": {
         "id": boost.id,
         "ends_at": boost.ends_at.isoformat(),
-        "hours": actual_hours,
-        "boost_type": btype,
+        "hours": 24,
+        "boost_type": "free_pro",
     }}), 201
+
+
+@boosts_bp.post("/create-checkout")
+@login_required
+def create_boost_checkout():
+    """Create a Stripe Checkout session for a paid boost."""
+    stripe.api_key = current_app.config["STRIPE_SECRET_KEY"]
+
+    data = request.get_json(force=True)
+    listing_id = data.get("listing_id")
+    hours = int(data.get("hours") or 0)
+
+    if not current_user.is_pro:
+        return jsonify({"error": "Upgrade to Pro to boost listings"}), 403
+
+    if hours not in DURATION_CONFIG:
+        return jsonify({"error": "Invalid duration"}), 400
+
+    price_id = current_app.config.get(DURATION_CONFIG[hours])
+    if not price_id:
+        return jsonify({"error": "Boost payments not configured"}), 500
+
+    listing = db.session.get(Listing, listing_id)
+    if not listing:
+        return jsonify({"error": "Listing not found"}), 404
+    if listing.user_id != current_user.id:
+        return jsonify({"error": "Forbidden"}), 403
+
+    now = datetime.utcnow()
+    Boost.query.filter(
+        Boost.listing_id == listing_id,
+        Boost.status == "active",
+        Boost.ends_at <= now,
+    ).update({"status": "expired"})
+    db.session.commit()
+
+    existing = Boost.query.filter(
+        Boost.listing_id == listing_id,
+        Boost.status == "active",
+        Boost.ends_at > now,
+    ).first()
+    if existing:
+        return jsonify({"error": "This listing already has an active boost"}), 409
+
+    # Get or create Stripe customer
+    sub = Subscription.query.filter_by(user_id=current_user.id).first()
+    customer_id = sub.stripe_customer_id if sub and sub.stripe_customer_id else None
+    if not customer_id:
+        customer = stripe.Customer.create(
+            email=current_user.email,
+            name=current_user.display_name or current_user.email,
+            metadata={"pocket_market_user_id": current_user.id},
+        )
+        customer_id = customer.id
+
+    origin = request.origin or current_app.config.get("FRONTEND_ORIGIN", "https://pocket-market.com")
+
+    session = stripe.checkout.Session.create(
+        customer=customer_id,
+        payment_method_types=["card"],
+        line_items=[{"price": price_id, "quantity": 1}],
+        mode="payment",
+        success_url=f"{origin}/listing/{listing_id}?boosted=1",
+        cancel_url=f"{origin}/listing/{listing_id}?boost_canceled=1",
+        metadata={
+            "pocket_market_user_id": current_user.id,
+            "boost_listing_id": listing_id,
+            "boost_hours": str(hours),
+        },
+    )
+
+    return jsonify({"url": session.url}), 200

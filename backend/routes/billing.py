@@ -1,11 +1,11 @@
 import stripe
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 
 from extensions import db
-from models import User, Subscription
+from models import User, Subscription, Boost, Listing
 
 billing_bp = Blueprint("billing", __name__)
 
@@ -131,9 +131,17 @@ def stripe_webhook():
 # ── Webhook handlers ─────────────────────────────────────────────
 
 def _handle_checkout_completed(session):
+    metadata = session.get("metadata", {})
+
+    # ── Boost one-time payment ──
+    if metadata.get("boost_listing_id"):
+        _handle_boost_payment(session)
+        return
+
+    # ── Pro subscription ──
     customer_id = session["customer"]
-    subscription_id = session["subscription"]
-    user_id = session.get("metadata", {}).get("pocket_market_user_id")
+    subscription_id = session.get("subscription")
+    user_id = metadata.get("pocket_market_user_id")
 
     if not user_id:
         existing = Subscription.query.filter_by(stripe_customer_id=customer_id).first()
@@ -144,6 +152,9 @@ def _handle_checkout_completed(session):
                 f"checkout.session.completed: cannot find user for customer {customer_id}"
             )
             return
+
+    if not subscription_id:
+        return
 
     stripe_sub = stripe.Subscription.retrieve(subscription_id)
 
@@ -164,6 +175,56 @@ def _handle_checkout_completed(session):
         user.is_pro = True
 
     db.session.commit()
+
+
+def _handle_boost_payment(session):
+    metadata = session.get("metadata", {})
+    listing_id = metadata.get("boost_listing_id")
+    hours = int(metadata.get("boost_hours", 24))
+    user_id = metadata.get("pocket_market_user_id")
+
+    if not listing_id or not user_id:
+        current_app.logger.error("Boost payment missing metadata")
+        return
+
+    listing = db.session.get(Listing, listing_id)
+    if not listing:
+        current_app.logger.error(f"Boost payment: listing {listing_id} not found")
+        return
+
+    now = datetime.now(timezone.utc)
+
+    # Auto-expire stale boosts
+    Boost.query.filter(
+        Boost.listing_id == listing_id,
+        Boost.status == "active",
+        Boost.ends_at <= now,
+    ).update({"status": "expired"})
+
+    # Check if already boosted
+    existing = Boost.query.filter(
+        Boost.listing_id == listing_id,
+        Boost.status == "active",
+        Boost.ends_at > now,
+    ).first()
+    if existing:
+        current_app.logger.warning(f"Boost payment: listing {listing_id} already boosted")
+        return
+
+    paid_cents = session.get("amount_total", 0)
+
+    boost = Boost(
+        listing_id=listing_id,
+        starts_at=now,
+        ends_at=now + timedelta(hours=hours),
+        duration_hours=hours,
+        status="active",
+        paid_cents=paid_cents,
+        boost_type="paid",
+    )
+    db.session.add(boost)
+    db.session.commit()
+    current_app.logger.info(f"Boost activated for listing {listing_id}, {hours}h, paid {paid_cents}c")
 
 
 def _handle_subscription_updated(subscription):

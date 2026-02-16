@@ -54,3 +54,8 @@ class Config:
     STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
     STRIPE_PRO_PRICE_ID = os.getenv("STRIPE_PRO_PRICE_ID", "")
     STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+    # Boost Stripe Price IDs (one-time payments)
+    BOOST_24H_PRICE_ID = os.getenv("BOOST_24H_PRICE_ID", "")
+    BOOST_3D_PRICE_ID = os.getenv("BOOST_3D_PRICE_ID", "")
+    BOOST_7D_PRICE_ID = os.getenv("BOOST_7D_PRICE_ID", "")

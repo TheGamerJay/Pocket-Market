@@ -69,6 +69,7 @@ export const api = {
   boostStatus: () => req("/api/boosts/status"),
   boostRules: () => req("/api/boosts/rules"),
   activateBoost: (payload) => req("/api/boosts/activate", { method:"POST", body: payload }),
+  boostCheckout: (payload) => req("/api/boosts/create-checkout", { method:"POST", body: payload }),
 
   billingStatus: () => req("/api/billing/status"),
   createCheckoutSession: () => req("/api/billing/create-checkout-session", { method:"POST" }),

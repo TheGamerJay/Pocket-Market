@@ -208,19 +208,20 @@ export default function Listing({ me, notify }){
 
   const activateBoost = async (hours, isFree = false) => {
     try {
-      await api.activateBoost({
-        listing_id: id,
-        hours: isFree ? 24 : hours,
-        use_free_boost: isFree,
-      });
-      setShowBoost(false);
-      setListing(prev => ({ ...prev, is_boosted: true }));
-      notify(isFree ? "Free boost activated!" : "Listing boosted!");
-      // Refresh boost info
-      api.boostStatus().then(s => {
-        setBoostInfo(s);
-        if (!s.free_boost_available) setCountdown(s.countdown_seconds || 0);
-      }).catch(() => {});
+      if (isFree) {
+        await api.activateBoost({ listing_id: id });
+        setShowBoost(false);
+        setListing(prev => ({ ...prev, is_boosted: true }));
+        notify("Free boost activated!");
+        api.boostStatus().then(s => {
+          setBoostInfo(s);
+          if (!s.free_boost_available) setCountdown(s.countdown_seconds || 0);
+        }).catch(() => {});
+      } else {
+        // Paid boost → Stripe Checkout
+        const res = await api.boostCheckout({ listing_id: id, hours });
+        if (res.url) window.location.href = res.url;
+      }
     } catch(err) { notify(err.message); }
   };
 
