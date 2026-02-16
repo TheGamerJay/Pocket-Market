@@ -196,40 +196,6 @@ def create_app():
         except Exception as e:
             return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
-    @app.route("/api/admin/seed-test-account", methods=["POST", "DELETE"])
-    def seed_test_account():
-        secret = request.headers.get("X-Cron-Secret") or request.args.get("secret")
-        if secret != app.config["CRON_SECRET"]:
-            return jsonify({"error": "Forbidden"}), 403
-
-        email = "stripe-review@pocket-market.com"
-
-        if request.method == "DELETE":
-            existing = User.query.filter_by(email=email).first()
-            if not existing:
-                return jsonify({"ok": True, "message": "Account does not exist"}), 200
-            db.session.delete(existing)
-            db.session.commit()
-            return jsonify({"ok": True, "message": "Test account deleted"}), 200
-
-        import secrets as _secrets
-        existing = User.query.filter_by(email=email).first()
-        if existing:
-            return jsonify({"ok": True, "message": "Test account already exists", "email": email}), 200
-
-        password = _secrets.token_urlsafe(20)
-        user = User(
-            email=email,
-            display_name="Stripe Reviewer",
-            is_verified=True,
-            onboarding_done=True,
-            is_test_account=True,
-        )
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        return jsonify({"ok": True, "email": email, "password": password}), 201
-
     @app.post("/api/admin/seed-demo")
     def seed_demo():
         import urllib.request
