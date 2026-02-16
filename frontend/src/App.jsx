@@ -142,7 +142,7 @@ export default function App(){
 
   const authPages = ["/login", "/signup", "/forgot", "/reset", "/verify"];
   const publicPages = ["/about", "/privacy", "/terms", "/contact", "/prohibited-items", "/how-it-works", "/refunds"];
-  const hideNav = authPages.includes(loc.pathname);
+  const hideNav = authPages.includes(loc.pathname) || publicPages.includes(loc.pathname) || !me.authed;
   const showFooter = !authPages.includes(loc.pathname);
 
   return (
