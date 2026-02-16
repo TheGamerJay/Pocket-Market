@@ -239,11 +239,11 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
       <div className="section-header">
         <span className="h2">{activeCategory === "All" ? "Nearby Items" : activeCategory}</span>
         <select value={sort} onChange={e => setSort(e.target.value)} style={{
-          background:"var(--panel)", border:"1px solid var(--border)", borderRadius:8,
-          color:"var(--text)", fontSize:11, fontWeight:700, padding:"5px 8px",
+          background:"var(--input-bg)", border:"1px solid var(--cyan)", borderRadius:8,
+          color:"var(--cyan)", fontSize:12, fontWeight:700, padding:"6px 10px",
           fontFamily:"inherit", cursor:"pointer", outline:"none",
         }}>
-          {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          {SORT_OPTIONS.map(s => <option key={s.value} value={s.value} style={{ background:"#1a1f2b", color:"#f0f2f5" }}>{s.label}</option>)}
         </select>
       </div>
 
