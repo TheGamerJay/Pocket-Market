@@ -60,7 +60,7 @@ export default function Observing({ notify }){
               <div className="muted" style={{ fontSize:13, marginTop:2 }}>
                 {l.observing_count > 0
                   ? <span style={{ color:"var(--cyan)" }}>{l.observing_count} people saved this</span>
-                  : (l.city || l.category || "Nearby")
+                  : (l.zip || l.city || l.category || "Nearby")
                 }
               </div>
             </div>

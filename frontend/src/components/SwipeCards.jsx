@@ -159,7 +159,7 @@ export default function SwipeCards({ listings, notify, onClose }) {
               </div>
             </div>
             <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-              {current.category} {current.city ? `\u00b7 ${current.city}` : ""}
+              {current.category} {(current.zip || current.city) ? `\u00b7 ${current.zip || current.city}` : ""}
             </div>
           </div>
         </div>

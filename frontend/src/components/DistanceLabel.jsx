@@ -12,8 +12,8 @@ export default function DistanceLabel({ listing }) {
     );
   }, []);
 
-  if (!listing?.lat || !listing?.lng) return <span>{listing?.city || "Nearby"}</span>;
-  if (!me) return <span>{listing?.city || "Nearby"}</span>;
+  if (!listing?.lat || !listing?.lng) return <span>{listing?.zip || listing?.city || "Nearby"}</span>;
+  if (!me) return <span>{listing?.zip || listing?.city || "Nearby"}</span>;
 
   const miles = haversineMiles(me.lat, me.lng, listing.lat, listing.lng);
   return <span>{miles.toFixed(1)} miles away</span>;

@@ -443,7 +443,7 @@ export default function Listing({ me, notify }){
       <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:12 }}>
         <IconPin size={16} color="var(--cyan)" />
         <span className="muted" style={{ fontSize:14 }}>
-          Area: {listing.city || "Unknown"} (<DistanceLabel listing={listing} />)
+          Area: {listing.zip || listing.city || "Unknown"} (<DistanceLabel listing={listing} />)
         </span>
       </div>
 

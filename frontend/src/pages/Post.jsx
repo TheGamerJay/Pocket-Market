@@ -13,7 +13,7 @@ export default function Post({ notify }){
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("electronics");
   const [condition, setCondition] = useState("used");
-  const [city, setCity] = useState("");
+  const [zip, setZip] = useState("");
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -37,6 +37,7 @@ export default function Post({ notify }){
   const onSubmit = async (e, isDraft = false) => {
     e.preventDefault();
     if (!title.trim()) { notify("Title is required"); return; }
+    if (!isDraft && !zip.trim()) { notify("ZIP code is required"); return; }
     const price_cents = Math.round(parseFloat((price || "0").replace(/[^0-9.]/g, "")) * 100);
     if (!isDraft && (!price_cents || price_cents <= 0)) { notify("Enter a valid price"); return; }
     setBusy(true);
@@ -47,7 +48,7 @@ export default function Post({ notify }){
         price_cents: price_cents || 0,
         category,
         condition,
-        city,
+        zip,
         pickup_or_shipping: "pickup",
         is_draft: isDraft,
       });
@@ -114,7 +115,7 @@ export default function Post({ notify }){
               <option value="fair">Fair</option>
             </select>
           </div>
-          <Input label="City (optional)" placeholder="e.g. Miami" value={city} onChange={e=>setCity(e.target.value)} />
+          <Input label="ZIP Code" placeholder="e.g. 01826" value={zip} onChange={e=>setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))} />
 
           {/* ── Photos ── */}
           <div className="col" style={{gap:8}}>
