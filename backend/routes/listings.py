@@ -59,6 +59,8 @@ def _listing_to_dict(l: Listing):
         "is_pro_seller": bool(seller and seller.is_pro),
         "is_verified_seller": bool(seller and seller.is_verified),
         "is_demo": bool(l.is_demo),
+        "seller_rating_avg": float(seller.rating_avg) if seller and seller.rating_avg else 0,
+        "seller_rating_count": seller.rating_count if seller else 0,
     }
 
 @listings_bp.get("/uploads/<path:filename>")
@@ -211,6 +213,10 @@ def search():
     q = (request.args.get("q") or "").strip()
     category = (request.args.get("category") or "").strip()
     city = (request.args.get("city") or "").strip()
+    condition = (request.args.get("condition") or "").strip()
+    min_price = request.args.get("min_price", type=float)
+    max_price = request.args.get("max_price", type=float)
+    sort = (request.args.get("sort") or "newest").strip()
     page = max(int(request.args.get("page", 1)), 1)
     per_page = min(max(int(request.args.get("per_page", 20)), 1), 100)
 
@@ -227,6 +233,12 @@ def search():
         query = query.filter_by(category=category)
     if city:
         query = query.filter(Listing.city.ilike(f"%{city}%"))
+    if condition:
+        query = query.filter(Listing.condition.ilike(condition))
+    if min_price is not None:
+        query = query.filter(Listing.price_cents >= int(min_price * 100))
+    if max_price is not None:
+        query = query.filter(Listing.price_cents <= int(max_price * 100))
 
     user_lat = request.args.get("lat", type=float)
     user_lng = request.args.get("lng", type=float)
@@ -243,11 +255,20 @@ def search():
             Listing.lng.between(user_lng - lng_delta, user_lng + lng_delta),
         )
 
-    results = query.order_by(Listing.created_at.desc()).limit(per_page + 1).offset((page - 1) * per_page).all()
+    sort_map = {
+        "newest": Listing.created_at.desc(),
+        "oldest": Listing.created_at.asc(),
+        "price_low": Listing.price_cents.asc(),
+        "price_high": Listing.price_cents.desc(),
+    }
+    order = sort_map.get(sort, Listing.created_at.desc())
+
+    results = query.order_by(order).limit(per_page + 1).offset((page - 1) * per_page).all()
     has_more = len(results) > per_page
     results = results[:per_page]
     dicts = [_listing_to_dict(l) for l in results]
-    dicts.sort(key=lambda d: (not d["is_pro_seller"], 0))
+    if sort == "newest" or sort not in sort_map:
+        dicts.sort(key=lambda d: (not d["is_pro_seller"], 0))
     return jsonify({"listings": dicts, "page": page, "has_more": has_more}), 200
 
 
@@ -255,8 +276,17 @@ def search():
 def feed():
     page = max(int(request.args.get("page", 1)), 1)
     per_page = min(max(int(request.args.get("per_page", 20)), 1), 100)
+    sort = (request.args.get("sort") or "newest").strip()
 
-    query = Listing.query.filter_by(is_draft=False).order_by(Listing.created_at.desc())
+    sort_map = {
+        "newest": Listing.created_at.desc(),
+        "oldest": Listing.created_at.asc(),
+        "price_low": Listing.price_cents.asc(),
+        "price_high": Listing.price_cents.desc(),
+    }
+    order = sort_map.get(sort, Listing.created_at.desc())
+
+    query = Listing.query.filter_by(is_draft=False).order_by(order)
 
     user_lat = request.args.get("lat", type=float)
     user_lng = request.args.get("lng", type=float)
@@ -278,7 +308,8 @@ def feed():
     listings = total_query[:per_page]
 
     dicts = [_listing_to_dict(l) for l in listings]
-    dicts.sort(key=lambda d: (not d["is_pro_seller"], 0))
+    if sort == "newest" or sort not in sort_map:
+        dicts.sort(key=lambda d: (not d["is_pro_seller"], 0))
     return jsonify({"listings": dicts, "page": page, "has_more": has_more}), 200
 
 @listings_bp.get("/<listing_id>")

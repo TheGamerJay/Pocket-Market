@@ -1,9 +1,17 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Card from "../components/Card.jsx";
+import SkeletonCard from "../components/SkeletonCard.jsx";
 import { IconSearch, IconChevronRight, IconCamera, IconEye, IconBell } from "../components/Icons.jsx";
 import SwipeCards from "../components/SwipeCards.jsx";
 import { api } from "../api.js";
+
+const SORT_OPTIONS = [
+  { value:"newest", label:"Newest" },
+  { value:"oldest", label:"Oldest" },
+  { value:"price_low", label:"Price: Low" },
+  { value:"price_high", label:"Price: High" },
+];
 
 const CATEGORIES = [
   "All", "Electronics", "Clothing", "Furniture", "Art",
@@ -47,6 +55,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [swipeMode, setSwipeMode] = useState(false);
+  const [sort, setSort] = useState("newest");
   const nav = useNavigate();
   const sentinelRef = useRef(null);
   const hasMoreRef = useRef(false);
@@ -58,7 +67,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
     const p = reset ? 1 : page + 1;
     try{
       const [feed, feat] = await Promise.all([
-        api.feed(p),
+        api.feed(p, sort),
         ...(reset ? [api.featured()] : []),
       ]);
       if (reset) {
@@ -82,7 +91,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
   const loadMoreRef = useRef(loadFeed);
   loadMoreRef.current = loadFeed;
 
-  useEffect(() => { loadFeed(); }, []);
+  useEffect(() => { loadFeed(); }, [sort]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -229,12 +238,18 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
       {/* ── Nearby Items ── */}
       <div className="section-header">
         <span className="h2">{activeCategory === "All" ? "Nearby Items" : activeCategory}</span>
-        <IconChevronRight size={18} color="var(--muted)" />
+        <select value={sort} onChange={e => setSort(e.target.value)} style={{
+          background:"var(--panel)", border:"1px solid var(--border)", borderRadius:8,
+          color:"var(--text)", fontSize:11, fontWeight:700, padding:"5px 8px",
+          fontFamily:"inherit", cursor:"pointer", outline:"none",
+        }}>
+          {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+        </select>
       </div>
 
       <div className="grid">
         {busy ? (
-          <Card><div className="muted">Loading...</div></Card>
+          [...Array(6)].map((_, i) => <SkeletonCard key={i} />)
         ) : filtered.length === 0 ? (
           <Card><div className="muted">{activeCategory === "All" ? "No items yet. Be the first to post!" : `No ${activeCategory.toLowerCase()} items found.`}</div></Card>
         ) : filtered.map((l, idx) => (
@@ -280,6 +295,11 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
                     <span style={{ fontWeight:800, fontSize:12 }}>{money(l.price_cents)}</span>
                     <span className="muted" style={{ fontSize:10 }}>{timeAgo(l.created_at)}</span>
                   </div>
+                  {l.seller_rating_count > 0 && (
+                    <div className="muted" style={{ fontSize:9, marginTop:2 }}>
+                      {l.seller_rating_avg}% positive ({l.seller_rating_count})
+                    </div>
+                  )}
                 </div>
               </Card>
             </Link>

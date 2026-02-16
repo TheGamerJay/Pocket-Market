@@ -5,6 +5,18 @@ import Card from "../components/Card.jsx";
 import { IconCamera, IconChevronRight, IconSearch, IconX } from "../components/Icons.jsx";
 import { api } from "../api.js";
 
+function SkeletonRow(){
+  return (
+    <div className="panel" style={{ display:"flex", gap:12, padding:12, alignItems:"center", borderRadius:14, marginBottom:8 }}>
+      <div className="skeleton" style={{ width:52, height:52, borderRadius:10, flexShrink:0 }} />
+      <div style={{ flex:1 }}>
+        <div className="skeleton" style={{ width:"60%", height:12, marginBottom:6 }} />
+        <div className="skeleton" style={{ width:"35%", height:10 }} />
+      </div>
+    </div>
+  );
+}
+
 function money(cents){
   const dollars = cents / 100;
   return dollars % 1 === 0 ? `$${dollars}` : `$${dollars.toFixed(2)}`;
@@ -90,7 +102,7 @@ export default function Saved({ notify }){
       {/* Items tab */}
       {tab === "items" && (
         itemsBusy ? (
-          <Card><div className="muted">Loading...</div></Card>
+          <>{[...Array(3)].map((_, i) => <SkeletonRow key={i} />)}</>
         ) : items.length ? items.map(l => (
           <Link key={l.id} to={`/listing/${l.id}`} style={{ display:"block", marginBottom:8 }}>
             <div className="panel" style={{
@@ -142,7 +154,7 @@ export default function Saved({ notify }){
       {/* Searches tab */}
       {tab === "searches" && (
         searchesBusy ? (
-          <Card><div className="muted">Loading...</div></Card>
+          <>{[...Array(3)].map((_, i) => <SkeletonRow key={i} />)}</>
         ) : searches.length === 0 ? (
           <Card>
             <div className="muted" style={{ textAlign:"center" }}>

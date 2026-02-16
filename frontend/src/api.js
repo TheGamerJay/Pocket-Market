@@ -36,7 +36,7 @@ export const api = {
 
   search: (params) => req(`/api/listings/search?${new URLSearchParams(params)}`),
   myListings: () => req("/api/listings/mine"),
-  feed: (page = 1) => req(`/api/listings?page=${page}&per_page=20`),
+  feed: (page = 1, sort = "newest") => req(`/api/listings?page=${page}&per_page=20&sort=${sort}`),
   purchases: () => req("/api/listings/purchases"),
   renewListing: (id) => req(`/api/listings/${id}/renew`, { method:"POST" }),
   reorderImages: (id, imageIds) => req(`/api/listings/${id}/images/reorder`, { method:"PUT", body: { image_ids: imageIds } }),
