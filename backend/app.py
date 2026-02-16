@@ -4,6 +4,8 @@ from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 
+from flask_login import current_user
+
 from config import Config
 from extensions import db, migrate, login_manager, limiter
 from models import User, ListingImage, Listing
