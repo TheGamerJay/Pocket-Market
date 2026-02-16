@@ -114,6 +114,7 @@ function UsersTab() {
             <div>
               <div style={{ fontSize: 13, fontWeight: 700 }}>{u.display_name || "—"}</div>
               <div className="muted" style={{ fontSize: 11 }}>{u.email}</div>
+              <div className="muted" style={{ fontSize: 10, marginTop: 2 }}>Joined {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}</div>
               <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
                 {u.is_pro && <span style={{ fontSize: 9, background: "rgba(62,224,255,.15)", color: "var(--cyan)", padding: "1px 5px", borderRadius: 4, fontWeight: 700 }}>PRO</span>}
                 {u.is_verified && <span style={{ fontSize: 9, background: "rgba(80,220,100,.15)", color: "#50dc64", padding: "1px 5px", borderRadius: 4, fontWeight: 700 }}>VERIFIED</span>}
