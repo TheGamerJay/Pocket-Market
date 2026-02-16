@@ -159,6 +159,8 @@ def create_app():
         admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
         if admin_email:
             admin_user = User.query.filter_by(email=admin_email).first()
+            if not admin_user:
+                admin_user = User.query.filter(User.email.ilike(admin_email)).first()
             if admin_user and not admin_user.is_admin:
                 admin_user.is_admin = True
                 db.session.commit()
@@ -202,6 +204,23 @@ def create_app():
     @app.get("/api/health")
     def health():
         return jsonify({"ok": True}), 200
+
+    @app.post("/api/admin/promote")
+    def promote_admin():
+        secret = request.headers.get("X-Cron-Secret") or request.args.get("secret")
+        if secret != app.config["CRON_SECRET"]:
+            return jsonify({"error": "Forbidden"}), 403
+        data = request.get_json(force=True)
+        email = (data.get("email") or "").strip().lower()
+        u = User.query.filter_by(email=email).first()
+        if not u:
+            # Try case-insensitive search
+            u = User.query.filter(User.email.ilike(email)).first()
+        if not u:
+            return jsonify({"error": "User not found", "searched": email}), 404
+        u.is_admin = True
+        db.session.commit()
+        return jsonify({"ok": True, "email": u.email, "is_admin": True}), 200
 
     @app.get("/api/test-email")
     def test_email():
