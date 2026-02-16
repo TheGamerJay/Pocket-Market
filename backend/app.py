@@ -101,6 +101,19 @@ def create_app():
         if changed:
             db.session.commit()
 
+        # Fix reports table columns that may have been created as INTEGER instead of VARCHAR(36)
+        try:
+            report_cols = {c["name"]: c for c in insp.get_columns("reports")}
+            for col_name in ("id", "reporter_id", "reported_user_id"):
+                col_info = report_cols.get(col_name)
+                if col_info and "INT" in str(col_info["type"]).upper():
+                    db.session.execute(text(
+                        f"ALTER TABLE reports ALTER COLUMN {col_name} TYPE VARCHAR(36) USING {col_name}::VARCHAR(36)"
+                    ))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
         # Partial unique index: only 1 active boost per listing at the DB level
         try:
             db.session.execute(text(
