@@ -27,6 +27,7 @@ import Contact from "./pages/Contact.jsx";
 import ProhibitedItems from "./pages/ProhibitedItems.jsx";
 import HowItWorks from "./pages/HowItWorks.jsx";
 import Refunds from "./pages/Refunds.jsx";
+import Info from "./pages/Info.jsx";
 import SellerProfile from "./pages/SellerProfile.jsx";
 import Footer from "./components/Footer.jsx";
 import AdFooter from "./components/AdFooter.jsx";
@@ -141,7 +142,7 @@ export default function App(){
   }, [loc.pathname]);
 
   const authPages = ["/login", "/signup", "/forgot", "/reset", "/verify"];
-  const publicPages = ["/about", "/privacy", "/terms", "/contact", "/prohibited-items", "/how-it-works", "/refunds"];
+  const publicPages = ["/about", "/privacy", "/terms", "/contact", "/prohibited-items", "/how-it-works", "/refunds", "/info"];
   const hideNav = authPages.includes(loc.pathname) || publicPages.includes(loc.pathname) || !me.authed;
   const showFooter = !authPages.includes(loc.pathname);
 
@@ -231,6 +232,7 @@ export default function App(){
           <Route path="/prohibited-items" element={<ProhibitedItems />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/refunds" element={<Refunds />} />
+          <Route path="/info" element={<Info />} />
           <Route path="/verify" element={<Verify notify={notify} />} />
 
           <Route path="/login" element={<Login notify={notify} refreshMe={refreshMe} />} />
@@ -240,7 +242,7 @@ export default function App(){
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        {showFooter && <AdFooter isPro={me?.user?.is_pro} />}
+        {showFooter && !publicPages.includes(loc.pathname) && <AdFooter isPro={me?.user?.is_pro} />}
         {showFooter && <Footer />}
       </div>
 

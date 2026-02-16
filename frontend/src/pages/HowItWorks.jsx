@@ -4,10 +4,10 @@ import TopBar from "../components/TopBar.jsx";
 import Card from "../components/Card.jsx";
 
 const STEPS = [
-  "Users create listings for items they wish to sell.",
-  "Buyers contact sellers directly through the platform.",
-  "Payments for optional services (such as boosts or Pro subscriptions) are processed by Pocket Market.",
-  "Item payments, delivery, and exchanges are handled between buyers and sellers.",
+  { title: "Create an Account", desc: "Sign up with email or Google to get started." },
+  { title: "Post or Browse Listings", desc: "Sellers create listings with photos, descriptions, and prices. Buyers browse, search, and filter to find items." },
+  { title: "Message Sellers", desc: "Contact sellers directly through in-app messaging to ask questions or arrange a deal." },
+  { title: "Meet Safely", desc: "Arrange a safe, public meetup location to exchange items in person. Use the Safe Meetup feature for suggested spots." },
 ];
 
 export default function HowItWorks(){
@@ -31,11 +31,23 @@ export default function HowItWorks(){
               }}>
                 {i + 1}
               </div>
-              <div className="muted" style={{ fontSize:12, lineHeight:1.7, paddingTop:4 }}>{step}</div>
+              <div style={{ paddingTop:2 }}>
+                <div style={{ fontWeight:700, fontSize:13 }}>{step.title}</div>
+                <div className="muted" style={{ fontSize:12, lineHeight:1.7, marginTop:2 }}>{step.desc}</div>
+              </div>
             </div>
           </Card>
         ))}
       </div>
+
+      <Card>
+        <div style={{ fontSize:13, fontWeight:700, marginBottom:6 }}>Important</div>
+        <div className="muted" style={{ fontSize:12, lineHeight:1.7 }}>
+          Pocket Market does <strong style={{ color:"var(--text)" }}>not</strong> process payments for items or handle shipping.
+          All item transactions occur directly between buyers and sellers.
+          Pocket Market only processes payments for optional platform services such as listing boosts and Pro subscriptions.
+        </div>
+      </Card>
 
       <div style={{ height:20 }} />
     </>
