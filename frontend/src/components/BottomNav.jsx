@@ -1,15 +1,17 @@
 import { NavLink } from "react-router-dom";
 import { IconHome, IconEye, IconPlus, IconChat, IconPerson } from "./Icons.jsx";
 
-const items = [
+const ALL_ITEMS = [
   { to: "/",         icon: IconHome,   label: "Home" },
   { to: "/saved",    icon: IconEye,    label: "Saved" },
-  { to: "/post",     icon: IconPlus,   label: "Post", isCenter: true },
-  { to: "/messages", icon: IconChat,   label: "Chats", badge: "chats" },
+  { to: "/post",     icon: IconPlus,   label: "Post", isCenter: true, writeOnly: true },
+  { to: "/messages", icon: IconChat,   label: "Chats", badge: "chats", writeOnly: true },
   { to: "/profile",  icon: IconPerson, label: "Profile" },
 ];
 
-export default function BottomNav({ unreadChats = 0 }){
+export default function BottomNav({ unreadChats = 0, isTestAccount = false }){
+  const items = isTestAccount ? ALL_ITEMS.filter(i => !i.writeOnly) : ALL_ITEMS;
+
   return (
     <div style={{
       position: "fixed", left: 0, right: 0, bottom: 0,

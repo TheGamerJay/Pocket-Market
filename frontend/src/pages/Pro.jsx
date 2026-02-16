@@ -122,7 +122,11 @@ export default function Pro({ me, notify, refreshMe }){
 
       <div style={{ height:16 }} />
 
-      {isPro ? (
+      {me?.user?.is_test_account ? (
+        <div className="muted" style={{ textAlign:"center", fontSize:12 }}>
+          Billing is disabled for this review account.
+        </div>
+      ) : isPro ? (
         <Button variant="ghost" onClick={handleManage} disabled={loading}>
           {loading ? "Loading..." : "Manage Subscription"}
         </Button>

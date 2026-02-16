@@ -89,6 +89,7 @@ def create_app():
         changed |= _add_col("listing_images", "image_data", "BYTEA")
         changed |= _add_col("listing_images", "image_mime", "VARCHAR(32)")
         changed |= _add_col("reports", "listing_id", "VARCHAR(36) REFERENCES listings(id)")
+        changed |= _add_col("users", "is_test_account", "BOOLEAN DEFAULT FALSE")
         if changed:
             db.session.commit()
 
@@ -157,6 +158,21 @@ def create_app():
 
     register_blueprints(app)
 
+    # Block write operations for test accounts (Stripe review)
+    @app.before_request
+    def _block_test_account_writes():
+        if not current_user.is_authenticated:
+            return
+        if not getattr(current_user, "is_test_account", False):
+            return
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return
+        # Allow login/logout/me
+        path = request.path
+        if path in ("/api/auth/login", "/api/auth/logout", "/api/auth/me"):
+            return
+        return jsonify({"error": "This is a read-only review account"}), 403
+
     @app.get("/api/health")
     def health():
         return jsonify({"ok": True}), 200
@@ -177,6 +193,31 @@ def create_app():
             return jsonify({"ok": status < 400, "sent_to": cu.email, "status": status, "resend": result}), 200
         except Exception as e:
             return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+
+    @app.post("/api/admin/seed-test-account")
+    def seed_test_account():
+        import secrets as _secrets
+        secret = request.headers.get("X-Cron-Secret") or request.args.get("secret")
+        if secret != app.config["CRON_SECRET"]:
+            return jsonify({"error": "Forbidden"}), 403
+
+        email = "stripe-review@pocket-market.com"
+        existing = User.query.filter_by(email=email).first()
+        if existing:
+            return jsonify({"ok": True, "message": "Test account already exists", "email": email}), 200
+
+        password = _secrets.token_urlsafe(20)
+        user = User(
+            email=email,
+            display_name="Stripe Reviewer",
+            is_verified=True,
+            onboarding_done=True,
+            is_test_account=True,
+        )
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({"ok": True, "email": email, "password": password}), 201
 
     @app.post("/api/admin/seed-demo")
     def seed_demo():

@@ -34,6 +34,7 @@ def me():
             "is_verified": current_user.is_verified,
             "avatar_url": current_user.avatar_url,
             "onboarding_done": current_user.onboarding_done,
+            "is_test_account": bool(current_user.is_test_account),
         }
     }), 200
 

@@ -29,6 +29,7 @@ class User(UserMixin, db.Model):
     is_pro = db.Column(db.Boolean, default=False)
     is_verified = db.Column(db.Boolean, default=False)
     onboarding_done = db.Column(db.Boolean, default=False)
+    is_test_account = db.Column(db.Boolean, default=False)
     last_seen = db.Column(db.DateTime(timezone=True), nullable=True)
     pro_free_boost_last_used_day = db.Column(db.String(10), nullable=True)  # "YYYY-MM-DD" UTC
 

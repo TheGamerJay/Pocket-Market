@@ -745,6 +745,15 @@ export default function Listing({ me, notify }){
               </Card>
             )}
           </>
+        ) : me?.user?.is_test_account ? (
+          <div style={{
+            padding:"14px", borderRadius:12, textAlign:"center",
+            background:"rgba(62,224,255,.06)", border:"1px solid rgba(62,224,255,.20)",
+          }}>
+            <div className="muted" style={{ fontSize:12, lineHeight:1.6 }}>
+              Messaging, offers, and purchasing are disabled on this review account.
+            </div>
+          </div>
         ) : listing.is_demo ? (
           <div style={{
             padding:"14px", borderRadius:12, textAlign:"center",

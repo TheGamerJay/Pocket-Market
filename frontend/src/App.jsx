@@ -147,7 +147,7 @@ export default function App(){
 
   return (
     <>
-      <div className="container">
+      <div className="container" style={me?.user?.is_test_account ? { paddingTop: 36 } : undefined}>
         <Routes>
           <Route path="/" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
@@ -161,7 +161,7 @@ export default function App(){
           }/>
           <Route path="/post" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
-              <Post me={me} notify={notify} />
+              {me?.user?.is_test_account ? <Navigate to="/" replace /> : <Post me={me} notify={notify} />}
             </RequireAuth>
           }/>
           <Route path="/listing/:id" element={
@@ -176,12 +176,12 @@ export default function App(){
           }/>
           <Route path="/messages" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
-              <Messages me={me} notify={notify} />
+              {me?.user?.is_test_account ? <Navigate to="/" replace /> : <Messages me={me} notify={notify} />}
             </RequireAuth>
           }/>
           <Route path="/chat/:id" element={
             <RequireAuth authed={me.authed} loading={me.loading}>
-              <Chat me={me} notify={notify} />
+              {me?.user?.is_test_account ? <Navigate to="/" replace /> : <Chat me={me} notify={notify} />}
             </RequireAuth>
           }/>
           <Route path="/profile" element={
@@ -244,7 +244,18 @@ export default function App(){
         {showFooter && <Footer />}
       </div>
 
-      {!hideNav && <BottomNav unreadChats={unreadChats} />}
+      {me?.user?.is_test_account && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+          background: "linear-gradient(135deg, var(--cyan), var(--violet))",
+          color: "#fff", textAlign: "center",
+          padding: "6px 12px", fontSize: 12, fontWeight: 700,
+          letterSpacing: 0.3,
+        }}>
+          Stripe Review Account &mdash; Read-Only Access
+        </div>
+      )}
+      {!hideNav && <BottomNav unreadChats={unreadChats} isTestAccount={me?.user?.is_test_account} />}
       <Toast text={toast} />
       <CookieConsent />
       {me.authed && me.user && !me.user.onboarding_done && (
