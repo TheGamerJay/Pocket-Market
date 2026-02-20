@@ -203,32 +203,32 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
           </div>
           <div style={{ display:"flex", gap:10, overflowX:"auto", paddingBottom:4 }}>
             {featured.filter((l, i, arr) => arr.findIndex(x => x.id === l.id) === i).map(l => (
-              <Link key={l.id} to={`/listing/${l.id}`} style={{ width:120, minWidth:120, flexShrink:0 }}>
+              <Link key={l.id} to={`/listing/${l.id}`} style={{ width:"calc(50% - 12px)", minWidth:"calc(50% - 12px)", flexShrink:0 }}>
                 <Card noPadding>
                   <div style={{ position:"relative" }}>
                     {l.images?.length > 0 ? (
-                      <img src={`${api.base}${l.images[0]}`} alt={l.title} style={{ width:"100%", height:90, objectFit:"cover", borderRadius:"var(--radius) var(--radius) 0 0", display:"block" }} onError={e => { e.target.onerror=null; e.target.src=""; e.target.style.background="var(--panel2)"; }} />
+                      <img src={`${api.base}${l.images[0]}`} alt={l.title} className="card-image" onError={e => { e.target.onerror=null; e.target.src=""; e.target.className="card-image-placeholder"; }} />
                     ) : (
-                      <div style={{ width:"100%", height:90, background:"var(--panel2)", borderRadius:"var(--radius) var(--radius) 0 0", display:"flex", alignItems:"center", justifyContent:"center" }}><IconCamera size={22} /></div>
+                      <div className="card-image-placeholder"><IconCamera size={28} /></div>
                     )}
                     {l.is_sold && (
                       <div style={{
-                        position:"absolute", top:4, left:4,
+                        position:"absolute", top:6, left:6,
                         background:"var(--red, #e74c3c)", color:"#fff",
-                        fontSize:8, fontWeight:800, padding:"2px 5px",
-                        borderRadius:4, letterSpacing:0.5,
+                        fontSize:9, fontWeight:800, padding:"2px 6px",
+                        borderRadius:5, letterSpacing:0.5,
                       }}>SOLD</div>
                     )}
                     <div style={{
-                      position:"absolute", top:4, right:4,
+                      position:"absolute", top:6, right:6,
                       background:"linear-gradient(135deg, var(--cyan), var(--violet))", color:"#fff",
-                      fontSize:7, fontWeight:800, padding:"2px 4px",
+                      fontSize:8, fontWeight:800, padding:"2px 5px",
                       borderRadius:4, letterSpacing:0.5,
                     }}>BOOSTED</div>
                   </div>
-                  <div style={{ padding:"6px 8px" }}>
-                    <div style={{ fontWeight:700, fontSize:11, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{l.title}</div>
-                    <div style={{ marginTop:2, fontSize:11, fontWeight:800 }}>{money(l.price_cents)}</div>
+                  <div style={{ padding:"8px 10px" }}>
+                    <div style={{ fontWeight:700, fontSize:12, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{l.title}</div>
+                    <div style={{ marginTop:2, fontSize:12, fontWeight:800 }}>{money(l.price_cents)}</div>
                   </div>
                 </Card>
               </Link>
