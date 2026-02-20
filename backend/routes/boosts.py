@@ -21,21 +21,26 @@ DURATIONS_MAP = {d["hours"]: d["price_cents"] for d in DURATIONS}
 DURATION_CONFIG = {d["hours"]: d["config_key"] for d in DURATIONS}
 
 
-def _utc_today_str():
-    """Return today's UTC date as 'YYYY-MM-DD'."""
-    return datetime.utcnow().strftime("%Y-%m-%d")
+def _est_now():
+    """Return current time in US Eastern (UTC-5)."""
+    return datetime.utcnow() - timedelta(hours=5)
+
+
+def _est_today_str():
+    """Return today's Eastern date as 'YYYY-MM-DD'."""
+    return _est_now().strftime("%Y-%m-%d")
 
 
 def _free_boost_available(user):
     """Check if Pro user can use their daily free boost."""
     if not user.is_pro:
         return False
-    return user.pro_free_boost_last_used_day != _utc_today_str()
+    return user.pro_free_boost_last_used_day != _est_today_str()
 
 
 def _seconds_until_reset():
-    """Seconds remaining until midnight UTC (next free boost)."""
-    now = datetime.utcnow()
+    """Seconds remaining until midnight EST (next free boost)."""
+    now = _est_now()
     midnight = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
     return int((midnight - now).total_seconds())
 
@@ -195,7 +200,7 @@ def activate_boost():
         boost_type="free_pro",
     )
     db.session.add(boost)
-    current_user.pro_free_boost_last_used_day = _utc_today_str()
+    current_user.pro_free_boost_last_used_day = _est_today_str()
 
     try:
         db.session.commit()
