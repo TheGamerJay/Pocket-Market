@@ -116,7 +116,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
     <>
       {/* ── Header ── */}
       <div style={{ display:"flex", justifyContent:"center", padding:"14px 0 6px" }}>
-        <img src={document.documentElement.getAttribute("data-theme") === "light" ? "/pocketmarket_favicon_dark_512x512.png" : "/pocketmarket_favicon_transparent_512x512.png"} alt="Pocket Market" style={{ width:"100%", maxWidth:320, height:"auto" }} />
+        <img src={document.documentElement.getAttribute("data-theme") === "light" ? "/pocketmarket_favicon_dark_512x512.png" : "/pocketmarket_favicon_transparent_512x512.png"} alt="Pocket Market" style={{ width:"60%", maxWidth:240, height:"auto" }} />
       </div>
 
       {/* ── Search bar + bell ── */}
