@@ -56,9 +56,9 @@ def featured():
     if not active:
         return jsonify({"featured_listing_ids": []}), 200
 
-    # Rotate through all active boosts in groups of 10
+    # Rotate through all active boosts in groups of 10 (no duplicates)
     total = len(active)
-    batch_size = 10
+    batch_size = min(10, total)
     start = _rotation_offset % total
     _rotation_offset += batch_size
 
