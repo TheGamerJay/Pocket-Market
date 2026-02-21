@@ -117,17 +117,31 @@ export default function Listing({ me, notify }){
   }, [countdown > 0]);
 
   // Auto-expire boost when boost_ends_at passes
+  // Uses both setTimeout and a visibility-change listener so it works
+  // even when the phone sleeps / tab goes to background
   useEffect(() => {
     if (!listing?.boost_ends_at || !listing.is_boosted) return;
-    const remaining = new Date(listing.boost_ends_at).getTime() - Date.now();
-    if (remaining <= 0) {
-      setListing(prev => ({ ...prev, is_boosted: false, boost_ends_at: null }));
-      return;
-    }
-    const t = setTimeout(() => {
-      setListing(prev => ({ ...prev, is_boosted: false, boost_ends_at: null }));
-    }, remaining);
-    return () => clearTimeout(t);
+    const endsAt = new Date(listing.boost_ends_at).getTime();
+
+    const checkExpired = () => {
+      if (Date.now() >= endsAt) {
+        setListing(prev => prev.is_boosted ? { ...prev, is_boosted: false, boost_ends_at: null } : prev);
+        return true;
+      }
+      return false;
+    };
+
+    // Already expired
+    if (checkExpired()) return;
+
+    // Timer for when boost ends
+    const t = setTimeout(checkExpired, endsAt - Date.now());
+
+    // Re-check when user comes back to the tab / wakes phone
+    const onVisible = () => { if (document.visibilityState === "visible") checkExpired(); };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => { clearTimeout(t); document.removeEventListener("visibilitychange", onVisible); };
   }, [listing?.boost_ends_at, listing?.is_boosted]);
 
   const goBack = () => window.history.length > 1 ? nav(-1) : nav("/");
