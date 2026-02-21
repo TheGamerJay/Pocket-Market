@@ -37,6 +37,7 @@ import Onboarding from "./components/Onboarding.jsx";
 import MeetupConfirm from "./pages/MeetupConfirm.jsx";
 import Verify from "./pages/Verify.jsx";
 import Admin from "./pages/Admin.jsx";
+import NotFound from "./pages/NotFound.jsx";
 
 // Apply stored theme on load
 (function(){
@@ -246,7 +247,7 @@ export default function App(){
           <Route path="/forgot" element={<Forgot notify={notify} />} />
           <Route path="/reset" element={<Reset notify={notify} />} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         {showFooter && !publicPages.includes(loc.pathname) && <AdFooter isPro={me?.user?.is_pro} />}
         {showFooter && <Footer />}

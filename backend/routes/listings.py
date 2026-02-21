@@ -12,6 +12,8 @@ from models import (
     Conversation, Message, SafetyAckEvent, Offer, Report, Review, MeetupConfirmation,
 )
 
+from content_filter import check_listing_content
+
 listings_bp = Blueprint("listings", __name__)
 
 def _listing_to_dict(l: Listing):
@@ -339,10 +341,15 @@ def create_listing():
     if not title:
         return jsonify({"error": "Title required"}), 400
 
+    description = (data.get("description") or "").strip() or None
+    moderation = check_listing_content(title, description)
+    if moderation:
+        return jsonify({"error": moderation["reason"]}), 422
+
     l = Listing(
         user_id=current_user.id,
         title=title,
-        description=(data.get("description") or "").strip() or None,
+        description=description,
         price_cents=int(data.get("price_cents") or 0),
         category=(data.get("category") or "other").strip(),
         condition=(data.get("condition") or "used").strip(),
@@ -372,6 +379,13 @@ def update_listing(listing_id):
         return jsonify({"error": "Forbidden"}), 403
 
     data = request.get_json(force=True)
+
+    new_title = (data.get("title") or "").strip() if "title" in data else l.title
+    new_desc = (data.get("description") or "").strip() if "description" in data else l.description
+    moderation = check_listing_content(new_title, new_desc)
+    if moderation:
+        return jsonify({"error": moderation["reason"]}), 422
+
     old_price = l.price_cents
     old_sold = l.is_sold
 
@@ -629,6 +643,9 @@ def publish_draft(listing_id):
         return jsonify({"error": "Not found"}), 404
     if l.user_id != current_user.id:
         return jsonify({"error": "Forbidden"}), 403
+    moderation = check_listing_content(l.title, l.description)
+    if moderation:
+        return jsonify({"error": moderation["reason"]}), 422
     if l.price_cents <= 0:
         return jsonify({"error": "Set a price before publishing"}), 400
     l.is_draft = False

@@ -6,6 +6,8 @@ from flask_login import login_required, current_user
 from extensions import db, limiter
 from models import Conversation, Message, Listing, User, ListingImage
 
+from content_filter import check_message_content
+
 messages_bp = Blueprint("messages", __name__)
 
 
@@ -133,6 +135,10 @@ def send_message(conversation_id):
     body = (data.get("body") or "").strip()
     if not body:
         return jsonify({"error": "Message body required"}), 400
+
+    moderation = check_message_content(body)
+    if moderation:
+        return jsonify({"error": moderation["reason"]}), 422
 
     m = Message(conversation_id=conversation_id, sender_id=current_user.id, body=body)
     db.session.add(m)
