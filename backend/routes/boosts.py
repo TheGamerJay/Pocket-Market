@@ -63,9 +63,9 @@ def _expire_stale_boosts():
     return count
 
 
-def _listing_to_dict(l, imgs, seller):
+def _listing_to_dict(l, imgs, seller, boost_ends_at=None):
     """Serialize a listing for the featured response."""
-    return {
+    d = {
         "id": l.id,
         "title": l.title,
         "price_cents": l.price_cents,
@@ -75,6 +75,9 @@ def _listing_to_dict(l, imgs, seller):
         "is_pro_seller": bool(seller and seller.is_pro),
         "created_at": l.created_at.isoformat(),
     }
+    if boost_ends_at:
+        d["boost_ends_at"] = boost_ends_at.isoformat()
+    return d
 
 
 @boosts_bp.get("/featured")
@@ -130,6 +133,7 @@ def featured():
 
     # Build listing data for boosted items
     listing_ids = [b.listing_id for b in batch]
+    boost_ends_map = {b.listing_id: b.ends_at for b in batch}
     featured_listings = []
     for lid in listing_ids:
         l = db.session.get(Listing, lid)
@@ -137,7 +141,7 @@ def featured():
             continue
         imgs = ListingImage.query.filter_by(listing_id=l.id).order_by(ListingImage.created_at.asc()).all()
         seller = db.session.get(User, l.user_id)
-        featured_listings.append(_listing_to_dict(l, imgs, seller))
+        featured_listings.append(_listing_to_dict(l, imgs, seller, boost_ends_map.get(lid)))
 
     return jsonify({"featured_listing_ids": listing_ids, "featured_listings": featured_listings}), 200
 

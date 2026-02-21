@@ -36,6 +36,15 @@ function money(cents){
   return dollars % 1 === 0 ? `$${dollars}` : `$${dollars.toFixed(2)}`;
 }
 
+function boostTimeLeft(iso){
+  if (!iso) return "";
+  const diff = (new Date(iso).getTime() - Date.now()) / 1000;
+  if (diff <= 0) return "Expired";
+  if (diff < 3600) return `${Math.ceil(diff/60)}m left`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ${Math.floor((diff%3600)/60)}m`;
+  return `${Math.floor(diff/86400)}d ${Math.floor((diff%86400)/3600)}h`;
+}
+
 function timeAgo(iso){
   if (!iso) return "";
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -56,6 +65,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
   const [loadingMore, setLoadingMore] = useState(false);
   const [swipeMode, setSwipeMode] = useState(false);
   const [sort, setSort] = useState("newest");
+  const [, setBoostTick] = useState(0);
   const nav = useNavigate();
   const sentinelRef = useRef(null);
   const hasMoreRef = useRef(false);
@@ -92,6 +102,13 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
   loadMoreRef.current = loadFeed;
 
   useEffect(() => { loadFeed(); }, [sort]);
+
+  // Tick boost countdowns every 60s
+  useEffect(() => {
+    if (!featured.length) return;
+    const t = setInterval(() => setBoostTick(n => n + 1), 60000);
+    return () => clearInterval(t);
+  }, [featured.length]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -222,9 +239,9 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
                     <div style={{
                       position:"absolute", top:6, right:6,
                       background:"linear-gradient(135deg, var(--cyan), var(--violet))", color:"#fff",
-                      fontSize:8, fontWeight:800, padding:"2px 5px",
-                      borderRadius:4, letterSpacing:0.5,
-                    }}>BOOSTED</div>
+                      fontSize:7, fontWeight:800, padding:"2px 5px",
+                      borderRadius:4, letterSpacing:0.3,
+                    }}>{l.boost_ends_at ? boostTimeLeft(l.boost_ends_at) : "BOOSTED"}</div>
                   </div>
                   <div style={{ padding:"8px 10px" }}>
                     <div style={{ fontWeight:700, fontSize:12, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{l.title}</div>
