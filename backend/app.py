@@ -100,6 +100,15 @@ def create_app():
         if changed:
             db.session.commit()
 
+        # Drop is_demo column if it still exists (removed from model)
+        try:
+            listing_cols = {c["name"] for c in insp.get_columns("listings")}
+            if "is_demo" in listing_cols:
+                db.session.execute(text("ALTER TABLE listings DROP COLUMN is_demo"))
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+
         # Fix reports table columns that may have been created as INTEGER instead of VARCHAR(36)
         try:
             report_cols = {c["name"]: c for c in insp.get_columns("reports")}
@@ -164,6 +173,55 @@ def create_app():
                         db.session.execute(text("DELETE FROM listings WHERE id=:lid"), {"lid": lid})
                     except Exception:
                         db.session.rollback()
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        # One-time cleanup: delete demo listings and demo user
+        try:
+            demo_user = db.session.execute(text(
+                "SELECT id FROM users WHERE email='demo@pocket-market.com'"
+            )).fetchone()
+            if demo_user:
+                demo_uid = demo_user[0]
+                demo_listings = db.session.execute(text(
+                    "SELECT id FROM listings WHERE user_id=:uid"
+                ), {"uid": demo_uid}).fetchall()
+                for (lid,) in demo_listings:
+                    for tbl, col in [
+                        ("boost_impressions", "boost_id IN (SELECT id FROM boosts WHERE listing_id=:lid)"),
+                        ("boosts", "listing_id=:lid"),
+                        ("messages", "conversation_id IN (SELECT id FROM conversations WHERE listing_id=:lid)"),
+                        ("conversations", "listing_id=:lid"),
+                        ("safe_meet_locations", "listing_id=:lid"),
+                        ("safety_ack_events", "listing_id=:lid"),
+                        ("observing", "listing_id=:lid"),
+                        ("notifications", "listing_id=:lid"),
+                        ("offers", "listing_id=:lid"),
+                        ("price_history", "listing_id=:lid"),
+                        ("reviews", "listing_id=:lid"),
+                        ("listing_views", "listing_id=:lid"),
+                        ("meetup_confirmations", "listing_id=:lid"),
+                        ("listing_images", "listing_id=:lid"),
+                        ("reports", "listing_id=:lid"),
+                    ]:
+                        try:
+                            db.session.execute(text(f"DELETE FROM {tbl} WHERE {col}"), {"lid": lid})
+                        except Exception:
+                            db.session.rollback()
+                    db.session.execute(text("DELETE FROM listings WHERE id=:lid"), {"lid": lid})
+                # Delete the demo user itself
+                for tbl in ["subscriptions", "push_subscriptions", "saved_searches",
+                            "blocked_users", "notifications", "observing", "safety_ack_events"]:
+                    try:
+                        db.session.execute(text(f"DELETE FROM {tbl} WHERE user_id=:uid"), {"uid": demo_uid})
+                    except Exception:
+                        db.session.rollback()
+                try:
+                    db.session.execute(text("DELETE FROM blocked_users WHERE blocked_id=:uid"), {"uid": demo_uid})
+                except Exception:
+                    db.session.rollback()
+                db.session.execute(text("DELETE FROM users WHERE id=:uid"), {"uid": demo_uid})
                 db.session.commit()
         except Exception:
             db.session.rollback()
