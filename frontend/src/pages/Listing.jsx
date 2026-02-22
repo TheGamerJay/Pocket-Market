@@ -369,34 +369,9 @@ export default function Listing({ me, notify }){
         <>
           {/* ── Title + Price ── */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:16 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <div style={{ fontWeight:800, fontSize:20 }}>{listing.title}</div>
-              {listing.is_demo && (
-                <span style={{
-                  background:"rgba(120,120,140,.85)", color:"#fff",
-                  fontSize:10, fontWeight:800, padding:"3px 8px",
-                  borderRadius:5, letterSpacing:0.5, flexShrink:0,
-                }}>DEMO</span>
-              )}
-            </div>
+            <div style={{ fontWeight:800, fontSize:20 }}>{listing.title}</div>
             <div style={{ fontWeight:800, fontSize:20, color:"var(--cyan)", flexShrink:0 }}>{money(listing.price_cents)}</div>
           </div>
-
-          {/* ── Demo disclaimer ── */}
-          {listing.is_demo && (
-            <div style={{
-              marginTop:10, padding:"12px 14px", borderRadius:12,
-              background:"rgba(120,120,140,.08)", border:"1px solid rgba(120,120,140,.20)",
-              lineHeight:1.6,
-            }}>
-              <div style={{ fontSize:12, fontWeight:700, marginBottom:4 }}>Demo Listing</div>
-              <div className="muted" style={{ fontSize:11 }}>
-                Pocket Market is a peer-to-peer marketplace. Listings are posted by individual users.
-                Pocket Market does not own, store, or ship physical goods.
-                This demo listing is shown for pre-launch review purposes.
-              </div>
-            </div>
-          )}
 
           {/* ── Seller link ── */}
           <Link to={`/seller/${listing.user_id}`} style={{ textDecoration:"none", color:"inherit" }}>
@@ -774,16 +749,6 @@ export default function Listing({ me, notify }){
           }}>
             <div className="muted" style={{ fontSize:12, lineHeight:1.6 }}>
               Messaging, offers, and purchasing are disabled on this review account.
-            </div>
-          </div>
-        ) : listing.is_demo ? (
-          <div style={{
-            padding:"14px", borderRadius:12, textAlign:"center",
-            background:"rgba(120,120,140,.08)", border:"1px solid rgba(120,120,140,.20)",
-          }}>
-            <div style={{ fontSize:13, fontWeight:700, marginBottom:4 }}>Demo Listing</div>
-            <div className="muted" style={{ fontSize:12, lineHeight:1.6 }}>
-              This is a sample listing for review purposes. Purchase actions are disabled on demo listings.
             </div>
           </div>
         ) : (

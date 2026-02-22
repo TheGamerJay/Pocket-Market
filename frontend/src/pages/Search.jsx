@@ -289,15 +289,7 @@ export default function Search({ notify }){
                         borderRadius:5, letterSpacing:0.5,
                       }}>SOLD</div>
                     )}
-                    {l.is_demo && (
-                      <div style={{
-                        position:"absolute", top:6, right:6,
-                        background:"rgba(120,120,140,.85)", color:"#fff",
-                        fontSize:8, fontWeight:800, padding:"2px 5px",
-                        borderRadius:4, letterSpacing:0.5,
-                      }}>DEMO</div>
-                    )}
-                    {l.is_pro_seller && !l.is_sold && !l.is_demo && (
+                    {l.is_pro_seller && !l.is_sold && (
                       <div style={{
                         position:"absolute", top:6, right:6,
                         background:"linear-gradient(135deg, var(--cyan), var(--violet))", color:"#fff",

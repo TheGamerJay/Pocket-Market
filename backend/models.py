@@ -63,7 +63,6 @@ class Listing(db.Model):
     pickup_or_shipping = db.Column(db.String(16), nullable=False)  # "pickup"|"shipping"
     is_sold = db.Column(db.Boolean, default=False)
     is_draft = db.Column(db.Boolean, default=False)
-    is_demo = db.Column(db.Boolean, default=False)
     buyer_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True, index=True)
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)

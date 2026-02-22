@@ -66,7 +66,6 @@ def _listing_to_dict(l: Listing):
         "view_count": view_count,
         "is_pro_seller": bool(seller and seller.is_pro),
         "is_verified_seller": bool(seller and seller.is_verified),
-        "is_demo": bool(l.is_demo),
         "seller_rating_avg": float(seller.rating_avg) if seller and seller.rating_avg else 0,
         "seller_rating_count": seller.rating_count if seller else 0,
     }

@@ -214,7 +214,7 @@ def list_listings():
         result.append({
             "id": l.id, "title": l.title,
             "price_cents": l.price_cents, "category": l.category,
-            "is_sold": l.is_sold, "is_draft": l.is_draft, "is_demo": l.is_demo,
+            "is_sold": l.is_sold, "is_draft": l.is_draft,
             "created_at": l.created_at.isoformat() if l.created_at else None,
             "image_url": img.image_url if img else None,
             "seller_email": seller.email if seller else None,

@@ -200,7 +200,6 @@ function ListingsTab() {
               <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
                 {l.is_sold && <span style={{ fontSize: 9, background: "rgba(255,60,60,.15)", color: "#ff4444", padding: "1px 5px", borderRadius: 4, fontWeight: 700 }}>SOLD</span>}
                 {l.is_draft && <span style={{ fontSize: 9, background: "rgba(255,200,60,.15)", color: "#e8b230", padding: "1px 5px", borderRadius: 4, fontWeight: 700 }}>DRAFT</span>}
-                {l.is_demo && <span style={{ fontSize: 9, background: "rgba(164,122,255,.15)", color: "var(--violet)", padding: "1px 5px", borderRadius: 4, fontWeight: 700 }}>DEMO</span>}
               </div>
             </div>
             <SmBtn label="Remove" danger onClick={() => remove(l.id)} />

@@ -70,7 +70,6 @@ def _listing_to_dict(l, imgs, seller, boost_ends_at=None):
         "title": l.title,
         "price_cents": l.price_cents,
         "is_sold": l.is_sold,
-        "is_demo": bool(l.is_demo),
         "images": [i.image_url for i in imgs],
         "is_pro_seller": bool(seller and seller.is_pro),
         "created_at": l.created_at.isoformat(),
