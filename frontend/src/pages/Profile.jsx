@@ -23,6 +23,9 @@ export default function Profile({ me, notify, refreshMe }){
   const [suggestion, setSuggestion] = useState("");
   const [sendingSuggestion, setSendingSuggestion] = useState(false);
   const [safetyOpen, setSafetyOpen] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [savingName, setSavingName] = useState(false);
   const fileRef = useRef(null);
 
   const toggleTheme = () => {
@@ -109,8 +112,77 @@ export default function Profile({ me, notify, refreshMe }){
             </div>
           </div>
 
-          <div>
-            <div style={{ fontWeight:800, fontSize:18 }}>{me.user.display_name || "User"}</div>
+          <div style={{ flex:1, minWidth:0 }}>
+            {editingName ? (
+              <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                <input
+                  autoFocus
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  onKeyDown={async e => {
+                    if (e.key === "Enter") {
+                      if (!newName.trim() || savingName) return;
+                      setSavingName(true);
+                      try {
+                        await api.updateProfile({ display_name: newName.trim() });
+                        await refreshMe();
+                        notify("Name updated!");
+                        setEditingName(false);
+                      } catch(err) { notify(err.message); }
+                      finally { setSavingName(false); }
+                    } else if (e.key === "Escape") {
+                      setEditingName(false);
+                    }
+                  }}
+                  placeholder="Your name"
+                  style={{
+                    flex:1, padding:"6px 10px", borderRadius:8, fontSize:15, fontWeight:700,
+                    background:"var(--input-bg,var(--panel2))", border:"1.5px solid var(--cyan)",
+                    color:"var(--text)", fontFamily:"inherit", outline:"none", minWidth:0,
+                  }}
+                />
+                <button
+                  disabled={!newName.trim() || savingName}
+                  onClick={async () => {
+                    if (!newName.trim() || savingName) return;
+                    setSavingName(true);
+                    try {
+                      await api.updateProfile({ display_name: newName.trim() });
+                      await refreshMe();
+                      notify("Name updated!");
+                      setEditingName(false);
+                    } catch(err) { notify(err.message); }
+                    finally { setSavingName(false); }
+                  }}
+                  style={{
+                    padding:"6px 10px", borderRadius:8, fontSize:12, fontWeight:700,
+                    background:"var(--cyan)", border:"none", color:"#000", cursor:"pointer",
+                    fontFamily:"inherit", flexShrink:0,
+                    opacity: !newName.trim() || savingName ? 0.5 : 1,
+                  }}
+                >{savingName ? "..." : "Save"}</button>
+                <button
+                  onClick={() => setEditingName(false)}
+                  style={{
+                    padding:"6px 8px", borderRadius:8, fontSize:12, fontWeight:700,
+                    background:"var(--panel2)", border:"1px solid var(--border)",
+                    color:"var(--muted)", cursor:"pointer", fontFamily:"inherit", flexShrink:0,
+                  }}
+                >✕</button>
+              </div>
+            ) : (
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <div style={{ fontWeight:800, fontSize:18 }}>{me.user.display_name || "User"}</div>
+                <button
+                  onClick={() => { setNewName(me.user.display_name || ""); setEditingName(true); }}
+                  style={{
+                    background:"none", border:"none", cursor:"pointer", padding:"2px 4px",
+                    color:"var(--muted)", fontSize:14, lineHeight:1,
+                  }}
+                  title="Edit name"
+                >✏️</button>
+              </div>
+            )}
             <div className="muted" style={{ fontSize:13, marginTop:2 }}>{me.user.email}</div>
             <div style={{ marginTop:6, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
               {me.user.is_pro

@@ -171,6 +171,26 @@ def reset():
     return jsonify({"ok": True}), 200
 
 
+@auth_bp.patch("/me")
+@login_required
+def update_me():
+    data = request.get_json(force=True)
+    display_name = (data.get("display_name") or "").strip()
+    if not display_name:
+        return jsonify({"error": "Name required"}), 400
+    if len(display_name) > 60:
+        return jsonify({"error": "Name too long (max 60)"}), 400
+    current_user.display_name = display_name
+    db.session.commit()
+    return jsonify({"ok": True, "display_name": display_name}), 200
+
+
+@auth_bp.get("/stats")
+def public_stats():
+    count = User.query.count()
+    return jsonify({"user_count": count}), 200
+
+
 @auth_bp.post("/send-verification")
 @login_required
 def send_verification():

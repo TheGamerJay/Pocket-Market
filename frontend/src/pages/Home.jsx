@@ -74,6 +74,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
   const [listings, setListings] = useState([]);
   const [featured, setFeatured] = useState([]);
   const [busy, setBusy] = useState(true);
+  const [userCount, setUserCount] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -130,6 +131,10 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
   useEffect(() => { loadFeed(); }, [sort]);
 
   useEffect(() => {
+    api.publicStats().then(d => setUserCount(d.user_count)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (!featured.length) return;
     const t = setInterval(() => setBoostTick(n => n + 1), 1000);
     return () => clearInterval(t);
@@ -172,6 +177,15 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
         }}>
           Buy Local.&nbsp;&nbsp;Sell Smart.&nbsp;&nbsp;Meet Safe.
         </div>
+        {userCount !== null && userCount > 0 && (
+          <div style={{
+            marginTop:7, fontSize:11, fontWeight:700,
+            background:"rgba(62,224,255,.10)", border:"1px solid rgba(62,224,255,.22)",
+            borderRadius:20, padding:"4px 14px", color:"var(--cyan)",
+          }}>
+            🧑‍🤝‍🧑 {userCount.toLocaleString()}+ members and growing
+          </div>
+        )}
       </div>
 
       {/* ── Welcome back ── */}

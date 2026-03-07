@@ -126,6 +126,9 @@ export const api = {
 
   supportContact: (payload) => req("/api/support/contact", { method:"POST", body: payload }),
 
+  updateProfile: (payload) => req("/api/auth/me", { method:"PATCH", body: payload }),
+  publicStats: () => req("/api/auth/stats"),
+
   // Email verification
   sendVerification: () => req("/api/auth/send-verification", { method:"POST" }),
   verifyEmail: (token) => req(`/api/auth/verify?token=${encodeURIComponent(token)}`),
