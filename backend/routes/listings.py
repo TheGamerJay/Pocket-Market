@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify, current_app, send_from_directory, Response
 from flask_login import login_required, current_user
 
@@ -601,12 +601,15 @@ def renew_listing(listing_id):
     if l.user_id != current_user.id:
         return jsonify({"error": "Forbidden"}), 403
 
+    now = datetime.now(timezone.utc)
     last_active = l.renewed_at or l.created_at
-    days_old = (datetime.utcnow() - last_active).days
+    if last_active.tzinfo is None:
+        last_active = last_active.replace(tzinfo=timezone.utc)
+    days_old = (now - last_active).days
     if days_old < 7:
         return jsonify({"error": f"You can relist after 7 days. {7 - days_old} day(s) remaining."}), 400
 
-    l.renewed_at = datetime.utcnow()
+    l.renewed_at = now
     db.session.commit()
     return jsonify({"ok": True, "renewed_at": l.renewed_at.isoformat()}), 200
 
