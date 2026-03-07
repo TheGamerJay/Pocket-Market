@@ -601,6 +601,11 @@ def renew_listing(listing_id):
     if l.user_id != current_user.id:
         return jsonify({"error": "Forbidden"}), 403
 
+    last_active = l.renewed_at or l.created_at
+    days_old = (datetime.utcnow() - last_active).days
+    if days_old < 7:
+        return jsonify({"error": f"You can relist after 7 days. {7 - days_old} day(s) remaining."}), 400
+
     l.renewed_at = datetime.utcnow()
     db.session.commit()
     return jsonify({"ok": True, "renewed_at": l.renewed_at.isoformat()}), 200

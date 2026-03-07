@@ -513,6 +513,37 @@ export default function Listing({ me, notify }){
             </Card>
           )}
 
+          {/* Relist button — only active after 7 days */}
+          {(() => {
+            const base = listing.renewed_at || listing.created_at;
+            const daysOld = base ? Math.floor((Date.now() - new Date(base).getTime()) / 86400000) : 0;
+            const canRelist = daysOld >= 7;
+            const daysLeft = 7 - daysOld;
+            return (
+              <button
+                disabled={!canRelist}
+                onClick={async () => {
+                  if (!canRelist) return;
+                  try {
+                    const res = await api.renewListing(listing.id);
+                    setListing(prev => ({ ...prev, renewed_at: res.renewed_at }));
+                    notify("Listing pushed back to the top!");
+                  } catch(err) { notify(err.message); }
+                }}
+                style={{
+                  padding:"10px 16px", borderRadius:14, fontSize:13, fontWeight:700,
+                  cursor: canRelist ? "pointer" : "not-allowed", fontFamily:"inherit",
+                  background: canRelist ? "rgba(62,224,255,.10)" : "var(--panel2)",
+                  border: canRelist ? "1.5px solid var(--cyan)" : "1px solid var(--border)",
+                  color: canRelist ? "var(--cyan)" : "var(--muted)",
+                }}
+                title={canRelist ? "Push listing back to the top" : "Available after 7 days"}
+              >
+                {canRelist ? "↑ Relist" : "↑ Relist (available in " + daysLeft + " day" + (daysLeft !== 1 ? "s" : "") + ")"}
+              </button>
+            );
+          })()}
+
           <button
             onClick={async () => {
               if (!window.confirm("Delete this listing? This can't be undone.")) return;
