@@ -408,7 +408,7 @@ export default function Home({ me, notify, unreadNotifs = 0 }){
                   })()}
                 </div>
                 <div style={{ marginTop:2 }} className="muted">
-                  <span style={{ fontSize:9 }}>{timeAgo(l.created_at)}</span>
+                  <span style={{ fontSize:9 }}>{timeAgo(l.renewed_at || l.created_at)}</span>
                 </div>
               </div>
             </Card>

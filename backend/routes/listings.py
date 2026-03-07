@@ -274,7 +274,7 @@ def search():
         )
 
     sort_map = {
-        "newest": Listing.created_at.desc(),
+        "newest": func.coalesce(Listing.renewed_at, Listing.created_at).desc(),
         "oldest": Listing.created_at.asc(),
         "price_low": Listing.price_cents.asc(),
         "price_high": Listing.price_cents.desc(),
@@ -297,7 +297,7 @@ def feed():
     sort = (request.args.get("sort") or "newest").strip()
 
     sort_map = {
-        "newest": Listing.created_at.desc(),
+        "newest": func.coalesce(Listing.renewed_at, Listing.created_at).desc(),
         "oldest": Listing.created_at.asc(),
         "price_low": Listing.price_cents.asc(),
         "price_high": Listing.price_cents.desc(),
